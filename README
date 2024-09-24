@@ -1,0 +1,63 @@
+The first phase of a standard compiler is lexical analysis. The job of the lexical analyzer
+is to read in the source program and tokenize it. That is, it must identify the lexemes of the
+source program and assign to each lexeme its appropriate token. The lexer (shorthand for the
+lexical analyzer) must not accept invalid lexemes. Error handling functionality is common in a
+lexer, but will not be required at that phase. The output of the lexer is a stream of tokens
+corresponding to the lexemes it has analyzed. This output is fed to the syntax analyzer (parser),
+which will be the focus of Phase Two. The work of lexing is typically performed by a DFA, or
+something computationally equivalent.
+In this project, you will be building a lexical analyzer that must recognize the valid
+lexemes of our toy programming language. A list of tokens and their corresponding lexemes (or
+lexeme specification) will be provided along with a set of keywords. Please note that all
+keywords fall under the identifier token. That is, if you match an identifier, then you must check
+if it is a keyword. There is more than one way to do this; I leave it up to your team to design and
+implement a method. Per the syllabus, your group may utilize either C++ or Python. You may
+not utilize a regular expression engine, pattern matcher, or any library that provides similar
+functionality.
+Learning Outcomes
+1. Understand the basic principles of how the lexemes of a programming language are
+built-up, recognized, and tokenized.
+2. Develop familiarity with implementing theoretical concepts such as a DFA in order to
+recognize the lexemes of a programming language.
+3. Develop familiarity with converting specifications and requirements into a correct,
+working piece of software.
+4. Develop skills in goal setting, communication, and time management in a group context.
+Requirements
+Your project must satisfy the following in order to receive full marks:
+1. It must have all required submission items uploaded to Canvas before the deadline.
+2. It must utilize a table-driven or function-based lexing scheme.
+3. It must successfully recognize all lexemes from the provided Token-Lexeme list.
+4. It must properly assign and output a token for each valid lexeme recognized.
+5. It must successfully lex all provided test cases.
+6. It must not utilize any regular expression engines or libraries of any kind.
+7. It must not recognize anything outside of the Token-Lexeme list.
+
+Grading
+The project will be graded based on how many of the above requirements your
+submission satisfies. If a project successfully meets all of the requirements above, then it will be
+awarded full marks. Points will be deducted for each requirement that is not met; partial credit is
+possible. The project will be worth 70 points. Per the course syllabus, there will be no late work
+accepted.
+Submission Items
+The following items must be submitted in a zipped file format to Canvas no later than the
+assigned due date of the project:
+1. Source code.
+2. Screenshot of input and successful output.
+3. A very brief project report (pdf format) that outlines the following:
+a. Group members.
+b. Which member did what work.
+c. Programming language used.
+d. Approach taken (table or functional).
+e. Citation of any external resources utilized (stackoverflow, reddit, wikipedia, etc).
+f. A statement that no AI resources were utilized in the production of any work for
+this project.
+Remarks
+1. Your test cases should be transformed, line-by-line, into their tokenized version. That is,
+each lexeme of the test case should have been replaced by its appropriate token.
+2. For Test Case 1, the set of lexemes for the tokens identifier, number, and comment are
+infinite. Please use every keyword as your identifier test cases, three different numbers as
+your number test cases, and a small comment for comment.
+3. The way comments are meant to be understood is that we ignore everything between //
+and the first newline we encounter.
+4. The token as named in the Token-Lexeme list is what should be output when a lexeme is
+matched.
