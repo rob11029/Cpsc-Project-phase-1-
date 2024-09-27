@@ -10,8 +10,10 @@ enum TokenType {
 };
 
 // Define keywords, operators, and delimiters
-vector<string> keywords = {"int", "float", "char", "if", "else", "return"};
-vector<string> operators = {"+", "-", "*", "/", "%", "++", "--", ">", "<", "<<", ">>", "=", "+=", "-="};
+vector<string> keywords = {"int", "float", "main", "char", "if", "else", "return", "unsigned", "void", "goto",
+                            "for", "while", "do", "break", "continue", "switch", "case", "default"};
+vector<string> operators = {".", "+", "-", "*", "/", "%", "++", "--", ">", "<", "<<", ">>", "=", "+=", "-="
+                            ">=", "<=", "&&", "!", "||","&", "|}"};
 vector<string> delimiters = {"(", ")", "{", "}", "[", "]", ";", ","};
 
 // Function to check if a lexeme is a keyword
@@ -164,16 +166,7 @@ vector<pair<TokenType, string>> lexer(const string& code) {
 
             continue;
         }
-
-
-
-
-
-
-
-
     }
-
     return tokens;
 }
 
@@ -195,12 +188,7 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
 }
 
 int main() {
-    string code = R"(int main() {
-    int myInt = 0;
-    myInt++;
-    myInt << 1;
-    return 0;
-})";
+    string code = R"(// this is a comment)";
 
     vector<pair<TokenType, string>> tokens = lexer(code);
     printTokens(tokens);
