@@ -14,7 +14,7 @@ vector<string> keywords = {"int", "float", "main", "char", "if", "else", "return
                             "for", "while", "do", "break", "continue", "switch", "case", "default"};
 vector<string> operators = {".", "+", "-", "*", "/", "%", "++", "--", ">", "<", "<<", ">>", "=", "==", "+=", "-="
                             ">=", "<=", "&&", "!", "||","&", "|}"};
-vector<string> delimiters = {"(", ")", "{", "}", "[", "]", ";", ","};
+vector<string> delimiters = {"(", ")", "{", "}", "[", "]", ";", ",", ":", "'"};
 
 // Function to check if a lexeme is a keyword
 bool isKeyword(const string& lexeme) {
@@ -191,8 +191,22 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
 }
 
 int main() {
-    string code = R"( break
-                    )";
+    string code = R"( 
+    // Keywords as identifiers
+    int main() {
+        int a = 1;
+        char c = 'c';
+        char ch = 'C';
+    }
+
+    // Numbers
+    int num1 = 123;
+    float num2 = 456.789;
+    int num3 = 0;
+
+    // Comment
+    //This is a comment.
+    )";
 
     vector<pair<TokenType, string>> tokens = lexer(code);
     printTokens(tokens);
