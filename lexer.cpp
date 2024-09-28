@@ -73,11 +73,14 @@ vector<pair<TokenType, string>> lexer(const string& code) {
 
         // Check for comments
         if (i + 1 < code.length() && code[i] == '/' && code[i + 1] == '/') {
-            while (i < code.length() && code[i] != '\n') {
-                i++;
-            }
-            continue;
-        }
+           int commentStart = i;
+           while(i < code.length() && code[i] != '\n'){
+               i++;
+           }
+           string comment = code.substr(commentStart, i - commentStart);
+           tokens.push_back({COMMENT, comment});
+           continue;
+       }
 
         // Check for delimiters
         if (isDelimiter(ch)) {
