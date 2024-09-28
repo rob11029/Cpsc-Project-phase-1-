@@ -11,9 +11,9 @@ enum TokenType {
 
 // Define keywords, operators, and delimiters
 vector<string> keywords = {"int", "float", "main", "char", "if", "else", "return", "unsigned", "void", "goto",
-                            "for", "while", "do", "break", "continue", "switch", "case", "default"};
-vector<string> operators = {".", "+", "-", "*", "/", "%", "++", "--", ">", "<", "<<", ">>", "=", "==", "+=", "-="
-                            ">=", "<=", "&&", "!", "||","&", "|}"};
+                            "for", "while", "break", "continue", "switch", "case",};
+vector<string> operators = {".", "+", "-", "*", "/", "%", "++", "--", ">", "<", "<<", ">>", "=", "==",
+                            ">=", "<=", "&&", "!", "||","&"};
 vector<string> delimiters = {"(", ")", "{", "}", "[", "]", ";", ",", ":", "'"};
 
 // Function to check if a lexeme is a keyword
@@ -56,7 +56,7 @@ bool isNumber(const string& lexeme) {
     return true;
 }
 
-// Lexical analyzer function
+//Lexical analyzer function
 vector<pair<TokenType, string>> lexer(const string& code) {
     vector<pair<TokenType, string>> tokens;
     string lexeme;
@@ -192,20 +192,12 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
 
 int main() {
     string code = R"( 
-    // Keywords as identifiers
-    int main() {
-        int intVar = 1;
-        char charVar1 = 'c';
-        char charVar2 = 'C';
-    }
-
-    // Numbers
-    int num1 = 123;
-    float num2 = 456.789;
-    int num3 = 0;
-
-    // Comment
-    //This is a comment.
+            int main() 
+            {
+                int 1stint= 0;; 
+                charmyChar2; 
+                return0; 
+            }
     )";
 
     vector<pair<TokenType, string>> tokens = lexer(code);
