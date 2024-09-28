@@ -194,9 +194,9 @@ int main() {
     string code = R"( 
     // Keywords as identifiers
     int main() {
-        int a = 1;
-        char c = 'c';
-        char ch = 'C';
+        int intVar = 1;
+        char charVar1 = 'c';
+        char charVar2 = 'C';
     }
 
     // Numbers
