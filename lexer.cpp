@@ -12,7 +12,7 @@ enum TokenType {
 // Define keywords, operators, and delimiters
 vector<string> keywords = {"int", "float", "main", "char", "if", "else", "return", "unsigned", "void", "goto",
                             "for", "while", "do", "break", "continue", "switch", "case", "default"};
-vector<string> operators = {".", "+", "-", "*", "/", "%", "++", "--", ">", "<", "<<", ">>", "=", "+=", "-="
+vector<string> operators = {".", "+", "-", "*", "/", "%", "++", "--", ">", "<", "<<", ">>", "=", "==", "+=", "-="
                             ">=", "<=", "&&", "!", "||","&", "|}"};
 vector<string> delimiters = {"(", ")", "{", "}", "[", "]", ";", ","};
 
@@ -188,7 +188,8 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
 }
 
 int main() {
-    string code = R"(// this is a comment)";
+    string code = R"( break
+                    )";
 
     vector<pair<TokenType, string>> tokens = lexer(code);
     printTokens(tokens);
