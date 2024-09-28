@@ -104,10 +104,19 @@ vector<pair<TokenType, string>> lexer(const string& code) {
         // Handle identifiers and keywords
         if (isalpha(ch) || ch == '_') {
             lexeme.clear();
+            lexeme += ch;
+            i++;
             while (i < code.length() && (isalnum(code[i]) || code[i] == '_')) {
                 lexeme += code[i];
                 i++;
             }
+
+            while (i < code.length() && (isalnum(code[i]) || code[i] == '_')) {
+                lexeme += code[i];
+                i++;
+                
+            }
+
 
             if (isKeyword(lexeme)) {
                 tokens.push_back({KEYWORD, lexeme});
