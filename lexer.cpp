@@ -129,15 +129,25 @@ vector<pair<TokenType, string>> lexer(const string& code) {
         // Handle numbers
         if (isdigit(ch)) {
             lexeme.clear();
-            while (i < code.length() && (isdigit(code[i]) || code[i] == '.')) {
+            lexeme += ch;
+            i++;
+            bool decimalPoint = false;
+            while (i < code.length() && (isdigit(code[i]) || (!decimalPoint && code[i] == '.'))) {
+                if (code[i] == '.') {
+                    decimalPoint = true;
+                }
                 lexeme += code[i];
                 i++;
             }
 
-            if (isNumber(lexeme)) {
-                tokens.push_back({NUMBER, lexeme});
-            } else {
+            if (i < code.length() && (isalpha(code[i]) || code[i] == '_')) {
+                while (i < code.length() && (isalnum(code[i]) || code[i] == '_')) {
+                    lexeme += code[i];
+                    i++;
+                }
                 tokens.push_back({INVALID, lexeme});
+            } else {
+                tokens.push_back({NUMBER, lexeme});
             }
             continue;
         }
