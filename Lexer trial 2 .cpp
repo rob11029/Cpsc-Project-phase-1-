@@ -9,13 +9,13 @@ enum TokenType {
     KEYWORD, IDENTIFIER, NUMBER, COMMENT, INVALID,
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE, SEMICOLON, COMMA,
     PLUS, MINUS, MULTIPLY, DIVIDE, MODULUS, ASSIGNMENT, INCREMENT, DECREMENT,
-    LESS_THAN, GREATER_THAN, LOGIC_EQUAL, LOGIC_AND, LOGIC_OR, LOGIC_NOT, 
+    LESS_THAN, LESS_THAN_EQ, GREATER_THAN, GREATER_THAN_EQ, LOGIC_EQUAL, LOGIC_AND, LOGIC_OR, LOGIC_NOT,
     BIT_AND, BIT_OR
 };
 
 // Define keywords
-vector<string> keywords = {"int", "float", "main", "char", "if", "else", "return", 
-                           "unsigned", "void", "goto", "for", "while", "break", 
+vector<string> keywords = {"int", "float", "main", "char", "if", "else", "return",
+                           "unsigned", "void", "goto", "for", "while", "break",
                            "continue", "switch", "case"};
 
 // Function to check if a lexeme is a keyword
@@ -178,8 +178,15 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 lexeme += code[i];
                 i++;
             }
-            tokens.push_back({NUMBER, lexeme});
-            continue;
+            if (i < code.length() && (isalpha(code[i]) || code[i] == '_')) {
+                while (i < code.length() && (isalnum(code[i]) || code[i] == '_')) {
+                    lexeme += code[i];
+                    i++;
+                }
+                tokens.push_back({INVALID, lexeme});
+            } else {
+                tokens.push_back({NUMBER, lexeme});
+            }
         }
 
         // Handle identifiers and keywords
@@ -231,7 +238,9 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
             case INCREMENT: tokenType = "INCREMENT"; break;
             case DECREMENT: tokenType = "DECREMENT"; break;
             case LESS_THAN: tokenType = "LESS_THAN"; break;
+            case LESS_THAN_EQ: tokenType = "LESS_THAN_EQ"; break;
             case GREATER_THAN: tokenType = "GREATER_THAN"; break;
+            case GREATER_THAN_EQ: tokenType = "GREATER_THAN_EQ"; break;
             case LOGIC_EQUAL: tokenType = "LOGIC_EQUAL"; break;
             case LOGIC_AND: tokenType = "LOGIC_AND"; break;
             case LOGIC_OR: tokenType = "LOGIC_OR"; break;
@@ -246,12 +255,12 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
 
 // Main function (your test case)
 int main() {
-    string code = R"( 
-        int main() 
+    string code = R"(
+        int main()
         {
-            int 1stint= 0;; 
-            charmyChar2; 
-            return0; 
+            int 1stint= 0;;
+            charmyChar2;
+            return0;
         }
     )";
 
