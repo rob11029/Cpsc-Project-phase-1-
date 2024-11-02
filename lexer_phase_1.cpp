@@ -6,22 +6,34 @@ using namespace std;
 
 // Define token types
 enum TokenType {
-    KEYWORD, IDENTIFIER, NUMBER, COMMENT, INVALID,
+    KEYWORD, IDENTIFIER, COMMENT, INVALID,
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACKET, RIGHT_BRACKET, 
     LEFT_BRACE, RIGHT_BRACE, DOT, SEMICOLON, COMMA,
     PLUS, MINUS, MULTIPLY, DIVIDE, MODULUS, ASSIGNMENT,
     INCREMENT, DECREMENT, LESS_THAN, LESS_THAN_EQ,
     GREATER_THAN, GREATER_THAN_EQ, LOGIC_EQUAL,
-    LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR
+    LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR, LOGIC_NOT_EQUAL,
+    BASIC, INTEGER, REAL, // update basic  phase 2
+    IF, ELSE, WHILE, BREAK, MAIN // update token phase 2
 };
 
-// Define keywords according to the specification
+// Define keywords according to the specification (update basic phase 2)
+vector<string> basic = {
+    "float", "int", "char", "void"
+};
+
 vector<string> keywords = {
-    "int", "return", "if", "switch", "float", "while",
-    "else", "case", "char", "for", "goto", "unsigned",
-    "main", "break", "continue", "void"
+    "return", "switch", "case", "for", "goto", "unsigned", "continue",
+    "do" // add keywords for phase 2
 };
 
+// Function to check if a lexeme is a basic type
+bool isBasicType(const string& lexeme) {
+    for (const string& type : basic) {
+        if (lexeme == type) return true;
+    }
+    return false;
+}
 // Function to check if a lexeme is a keyword
 bool isKeyword(const string& lexeme) {
     for (const string& keyword : keywords) {
@@ -61,41 +73,43 @@ vector<pair<TokenType, string>> lexer(const string& code) {
             continue;
         }
 
-        // Handle numbers (including floating point)
+        // Handle numbers (integers and reals)
         if (isdigit(ch) || (ch == '.' && i + 1 < code.length() && isdigit(code[i + 1]))) {
             string number;
-            bool hasDecimal = false;
+            bool isReal = false;
             
-            // Handle leading decimal point
-            if (ch == '.') {
-                number += "0.";
-                hasDecimal = true;
-                i++;
-            }
-            
-            // Read the whole number part
+            // Handle leading digits
             while (i < code.length() && isdigit(code[i])) {
                 number += code[i];
                 i++;
             }
             
-            // Handle decimal point and fractional part
-            if (i < code.length() && code[i] == '.' && !hasDecimal) {
-                hasDecimal = true;
+            // Check for decimal point
+            if (i < code.length() && code[i] == '.') {
+                isReal = true;
                 number += code[i];
                 i++;
-                // Read fractional part
+
+                while(i < code.length() && isdigit(code[i])) {
+                    number += code[i];
+                    i++;
+                }
+            }
+            // Handle numbers begin with dot
+            if (number.empty() && i < code.length() && code[i] == '.') {
+                isReal = true;
+                number = "0.";
+                i++;
+                
                 while (i < code.length() && isdigit(code[i])) {
                     number += code[i];
                     i++;
                 }
             }
-            
-            tokens.push_back({NUMBER, number});
+            tokens.push_back({isReal ? REAL : INTEGER, number});
             continue;
         }
-
-        // Handle identifiers ([a-Z])([a-Z]|[0-9])
+        // Handle identifiers 
         if (isalpha(ch)) {
             string identifier;
             identifier += ch;
@@ -104,7 +118,19 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 identifier += code[i];
                 i++;
             }
-            if (isKeyword(identifier)) {
+            if (identifier == "if") {
+                tokens.push_back({IF, identifier});
+            } else if (identifier == "else") {
+                tokens.push_back({ELSE, identifier});
+            } else if (identifier == "while") {
+                tokens.push_back({WHILE, identifier});
+            } else if (identifier == "break") {
+                tokens.push_back({BREAK, identifier});
+            } else if (identifier == "main") {
+                tokens.push_back({MAIN, identifier});
+            } else if (isBasicType(identifier)) {
+                tokens.push_back({BASIC, identifier});
+            } else if (isKeyword(identifier)) {
                 tokens.push_back({KEYWORD, identifier});
             } else {
                 tokens.push_back({IDENTIFIER, identifier});
@@ -180,7 +206,14 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 tokens.push_back({BIT_OR, "|"});
             }
         }
-        else if (ch == '!') tokens.push_back({LOGIC_NOT, "!"});
+        else if (ch == '!'){
+            if (i + 1 < code.length() && code[i + 1] == '=') {
+                tokens.push_back({LOGIC_NOT_EQUAL, "!="});
+                i++;
+            } else {
+                tokens.push_back({LOGIC_NOT, "!"});
+            }
+        } 
         else if (ch != '.') { // Skip standalone dots as they're handled in number parsing
             tokens.push_back({INVALID, string(1, ch)});
         }
@@ -194,9 +227,16 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
     for (const auto& token : tokens) {
         string tokenType;
         switch (token.first) {
+            case BASIC: tokenType = "Basic"; break;
+            case IF: tokenType = "If"; break;
+            case ELSE: tokenType = "Else"; break;
+            case WHILE: tokenType = "While"; break;
+            case BREAK: tokenType = "Break"; break;
+            case MAIN: tokenType = "Main"; break;
             case KEYWORD: tokenType = "Keyword"; break;
             case IDENTIFIER: tokenType = "Identifier"; break;
-            case NUMBER: tokenType = "number"; break;
+            case REAL: tokenType = "Real"; break;
+            case INTEGER: tokenType = "Integer"; break;
             case COMMENT: tokenType = "COMMENT"; break;
             case LEFT_PAREN: tokenType = "leftParen"; break;
             case RIGHT_PAREN: tokenType = "rightParen"; break;
@@ -218,13 +258,14 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
             case LESS_THAN: tokenType = "lessThan"; break;
             case LESS_THAN_EQ: tokenType = "lessThanEq"; break;
             case GREATER_THAN: tokenType = "greaterThan"; break;
-            case GREATER_THAN_EQ: tokenType = "greaterthanEq"; break;
+            case GREATER_THAN_EQ: tokenType = "greaterThanEq"; break;
             case LOGIC_EQUAL: tokenType = "logicEqual"; break;
             case LOGIC_AND: tokenType = "logicAnd"; break;
             case LOGIC_OR: tokenType = "logicOr"; break;
             case LOGIC_NOT: tokenType = "logicNot"; break;
             case BIT_AND: tokenType = "bitAnd"; break;
             case BIT_OR: tokenType = "bitOr"; break;
+            case LOGIC_NOT_EQUAL: tokenType = "logicNotEqual"; break;
             case INVALID: tokenType = "INVALID"; break;
         }
         cout << tokenType << ": " << token.second << endl;
@@ -234,35 +275,7 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
 int main() {
     // Test case
     string code = R"(
-        int main()
-            {
-                int myResult1 = 0;
-                int arraySize = 5;
-                int myArray[arraySize] = {1,2,3,4,5};
-                // this is a for loop
-                for (int i = 0; i < arraySize; ++i)
-                {
-                    if (myArray[i] % 2 == 0)
-                    {
-                        myResult++;
-                    }
-                    else
-                    {
-                        myResult--;
-                    }
-                }
-                if (myResult >= 0)
-                {
-                    continue;
-                }
-                else
-                {
-                    myResult = myResult * (-1);
-                }
-                return 0;
-            }
-
-
+        if else main while break float int char void do do1 do2 != 3 3.2 = ==
     )";
 
     vector<pair<TokenType, string>> tokens = lexer(code);
