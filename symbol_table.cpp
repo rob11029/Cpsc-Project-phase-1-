@@ -41,14 +41,10 @@ public:
   SymbolTable() {
     for (int i = 0; i < 100; i++) head[i] = NULL;
   }
-  int hashf(string lexeme);
-  bool insert(string lexeme, string token, string value, int line_number, char char_start_num, int length);
-  string find (string lexeme);
-};
 
 // Function to find the lexeme in the symbol table
-string SymbolTable::find(string l) {
-  int index = hashf(l);
+string find(string l) {
+  int index = getIndex(l);
   Node* start = head[index];
   if (start == NULL) return "-1";
 
@@ -64,29 +60,31 @@ string SymbolTable::find(string l) {
 
 // Function to insert lexemes, token, lexeme value / lexeme itself, line number, character start number,
 // and lexeme length into Symbol Table
-bool SymbolTable::insert(string l, string t, string v, int lNo, char c_s_n, int lgh) {
-  int index = hashf(l);
-  Node* p = new Node(l, t, v, lNo, c_s_n, lgh);
+bool insert(string l, string t, string v, int lNo, char c_s_n, int lgh) {
+  int index = getIndex(l);
+  Node* x = new Node(l, t, v, lNo, c_s_n, lgh);
 
   if (head[index] == NULL) {
-    head[index] = p;
+    head[index] = x;
     cout << " Inserted " << l << " in the symbol table" << endl;
     return true;
   } else {
     Node* start = head[index];
     while (start->next != NULL) start = start->next;
 
-    start->next = p;
+    start->next = x;
     cout << " Inserted " << l << " in the symbol table" << endl;
     return true;
   }
   return false;
 }
 
-int SymbolTable::hashf(string l) {
-  int asciiSum = 0;
+// Function to get index based on the lexeme
+int getIndex(string l) {
+  int index = 0;
   for (int i = 0; i < l.length(); i++) {
-    asciiSum = asciiSum + l[i];
+    index = index + l[i];
   }
-  return (asciiSum % 100);
+  return (index % 100);
 }
+};

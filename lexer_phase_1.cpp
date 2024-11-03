@@ -2,12 +2,13 @@
 #include <string>
 #include <cctype>
 #include <vector>
+#include "symbol_table.cpp"
 using namespace std;
 
 // Define token types
 enum TokenType {
     KEYWORD, IDENTIFIER, COMMENT, INVALID,
-    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACKET, RIGHT_BRACKET, 
+    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACKET, RIGHT_BRACKET,
     LEFT_BRACE, RIGHT_BRACE, DOT, SEMICOLON, COMMA,
     PLUS, MINUS, MULTIPLY, DIVIDE, MODULUS, ASSIGNMENT,
     INCREMENT, DECREMENT, LESS_THAN, LESS_THAN_EQ,
@@ -77,13 +78,13 @@ vector<pair<TokenType, string>> lexer(const string& code) {
         if (isdigit(ch) || (ch == '.' && i + 1 < code.length() && isdigit(code[i + 1]))) {
             string number;
             bool isReal = false;
-            
+
             // Handle leading digits
             while (i < code.length() && isdigit(code[i])) {
                 number += code[i];
                 i++;
             }
-            
+
             // Check for decimal point
             if (i < code.length() && code[i] == '.') {
                 isReal = true;
@@ -100,7 +101,7 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 isReal = true;
                 number = "0.";
                 i++;
-                
+
                 while (i < code.length() && isdigit(code[i])) {
                     number += code[i];
                     i++;
@@ -109,7 +110,7 @@ vector<pair<TokenType, string>> lexer(const string& code) {
             tokens.push_back({isReal ? REAL : INTEGER, number});
             continue;
         }
-        // Handle identifiers 
+        // Handle identifiers
         if (isalpha(ch)) {
             string identifier;
             identifier += ch;
@@ -213,7 +214,7 @@ vector<pair<TokenType, string>> lexer(const string& code) {
             } else {
                 tokens.push_back({LOGIC_NOT, "!"});
             }
-        } 
+        }
         else if (ch != '.') { // Skip standalone dots as they're handled in number parsing
             tokens.push_back({INVALID, string(1, ch)});
         }
@@ -269,17 +270,26 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
             case INVALID: tokenType = "INVALID"; break;
         }
         cout << tokenType << ": " << token.second << endl;
+
+        // Insert into symbol table
+        SymbolTable symbol;
+        #line 284
+        symbol.insert(token.second, tokenType, token.second, __LINE__, token.second[0], token.second.length());
+        symbol.find(token.second);
     }
 }
 
 int main() {
     // Test case
     string code = R"(
-        if else main while break float int char void do do1 do2 != 3 3.2 = ==
+        int main() {
+        int zero;
+        zero = 1;
+        return 0;
+        }
     )";
 
     vector<pair<TokenType, string>> tokens = lexer(code);
     printTokens(tokens);
-
     return 0;
 }
