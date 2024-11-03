@@ -22,7 +22,7 @@ public:
     next = NULL;
   }
 
-  // TESTING COULD REMOVE WHEN USING PARSER
+  // FOR TESTING, COULD BE REMOVE WHEN USING THE PARSER
   void print() {
     cout << " Lexeme: " << lexeme
          << "\n Token: " << token
