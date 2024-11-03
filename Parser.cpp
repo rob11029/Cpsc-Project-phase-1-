@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "lexer.h" // Your lexer header file
-#include "symbolTable.h" // Your symbol table
+#include "lexer_phase_1.cpp" // Your lexer header file
+#include "symbol_table.cpp"  // Your symbol table
 
 using namespace std;
 
