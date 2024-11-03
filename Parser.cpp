@@ -1,26 +1,25 @@
 #include <iostream>
 #include <vector>
-#include "lexer_phase_1.cpp" // Your lexer header file
-#include "symbol_table.cpp"  // Your symbol table
+#include "lexer_phase_1.cpp"
+#include "symbol_table.cpp"
 
 using namespace std;
 
-// Set up token tracking
+// Set up token tracking hre
 Token currentToken;
 int tokenIndex = 0;
 vector<Token> tokens;
 
-// Move to the next token in the list
+// Move the next one
 void getNextToken() {
     if (tokenIndex < tokens.size()) {
         currentToken = tokens[tokenIndex++];
     } else {
-        // Assuming there's a token for end-of-file in your lexer
         currentToken = Token(END_OF_FILE, "");
     }
 }
 
-// Check if the current token matches expected and move to the next one
+// Check if the current token matches what we want and move to the next
 bool expect(TokenType type) {
     if (currentToken.type == type) {
         getNextToken();
@@ -31,7 +30,7 @@ bool expect(TokenType type) {
     }
 }
 
-// Report an error if parsing goes wrong
+// Report if something goes wrong
 void reportError(const string& message) {
     cout << "Error: " << message << " at token " << currentToken.lexeme << endl;
     exit(1);
@@ -49,13 +48,13 @@ void parseExpression();
 void parseTerm();
 void parseFactor();
 
-// Program -> main block
+// Program
 void parseProgram() {
-    expect(KEYWORD);  // Expect "main"
+    expect(KEYWORD);
     parseBlock();
 }
 
-// Block -> { declarations statements }
+// declarations statements
 void parseBlock() {
     expect(LEFT_BRACE);
     parseDeclarations();
@@ -63,23 +62,23 @@ void parseBlock() {
     expect(RIGHT_BRACE);
 }
 
-// Declarations -> Declaration Declarations | ε
+// Parses a list of variable declarations
 void parseDeclarations() {
     if (currentToken.type == BASIC || currentToken.type == IDENTIFIER) {
         parseDeclaration();
         parseDeclarations();
     }
-    // If not BASIC or IDENTIFIER, we just exit this function, as it could be ε
+    // We can exit here if we need to
 }
 
-// Declaration -> Type IDENTIFIER ;
+// Parses a variable declaration with a type, name, and semicolon
 void parseDeclaration() {
     parseType();
     expect(IDENTIFIER);
     expect(SEMICOLON);
 }
 
-// Type -> BASIC | [ BASIC ]
+// Parses a data type, like basic types or arrays
 void parseType() {
     if (currentToken.type == BASIC) {
         expect(BASIC);
@@ -92,17 +91,17 @@ void parseType() {
     }
 }
 
-// Statements -> Statement Statements | ε
+// Parses a list of statements, like if, while, return
 void parseStatements() {
     if (currentToken.type == LEFT_BRACE || currentToken.type == IDENTIFIER || 
         currentToken.type == IF || currentToken.type == WHILE || currentToken.type == RETURN) {
         parseStatement();
         parseStatements();
     }
-    // If it doesn't match any statement, it could be ε
+    // if it doesnt match we assume its epsi
 }
 
-// Statement -> IF | WHILE | RETURN | Block | etc.
+// Statement
 void parseStatement() {
     if (currentToken.type == IF) {
         expect(IF);
@@ -127,25 +126,25 @@ void parseStatement() {
     }
 }
 
-// Expression -> Term { + Term }
+// Parses a part of an expression with + or - operators
 void parseExpression() {
     parseTerm();
     while (currentToken.type == PLUS || currentToken.type == MINUS) {
-        getNextToken(); // Handle "+" or "-"
+        getNextToken();
         parseTerm();
     }
 }
 
-// Term -> Factor { * Factor }
+// Parses a part of an expression with *, /, or % operators
 void parseTerm() {
     parseFactor();
     while (currentToken.type == MULTIPLY || currentToken.type == DIVIDE || currentToken.type == MODULUS) {
-        getNextToken(); // Handle "*", "/", or "%"
+        getNextToken();
         parseFactor();
     }
 }
 
-// Factor -> ( Expression ) | NUMBER | IDENTIFIER
+// Parses a single number, variable, or expression in parentheses
 void parseFactor() {
     if (currentToken.type == LEFT_PAREN) {
         expect(LEFT_PAREN);
@@ -167,7 +166,7 @@ int main() {
     
     // Get tokens from lexer
     tokens = lexer(code);
-    getNextToken(); // Start with the first token
+    getNextToken();
 
     // Start parsing
     parseProgram();
