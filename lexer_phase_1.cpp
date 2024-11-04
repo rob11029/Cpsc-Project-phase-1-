@@ -229,6 +229,7 @@ vector<pair<TokenType, string>> lexer(const string& code) {
 void printTokens(const vector<pair<TokenType, string>>& tokens) {
     for (const auto& token : tokens) {
         string tokenType;
+        int index;
         switch (token.first) {
             case BASIC: tokenType = "Basic"; break;
             case IF: tokenType = "If"; break;
@@ -277,8 +278,9 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
         // Insert into symbol table
         SymbolTable symbol;
         #line 284
-        symbol.insert(token.second, tokenType, token.second, __LINE__, token.second[0], token.second.length());
+        symbol.insert(token.second, tokenType, token.second, __LINE__, index, token.second.length());
         symbol.find(token.second);
+        index++;
     }
 }
 
