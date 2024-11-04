@@ -16,7 +16,7 @@ enum TokenType {
     LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR, LOGIC_NOT_EQUAL,
     BASIC, INTEGER, REAL, // update basic  phase 2
     IF, ELSE, WHILE, BREAK, MAIN, DO, // update token phase 2
-    NUMBER, END_OF_FILE,
+    RETURN, NUMBER, END_OF_FILE,
 };
 
 struct Token {
