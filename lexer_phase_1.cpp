@@ -15,7 +15,7 @@ enum TokenType {
     GREATER_THAN, GREATER_THAN_EQ, LOGIC_EQUAL,
     LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR, LOGIC_NOT_EQUAL,
     BASIC, INTEGER, REAL, // update basic  phase 2
-    IF, ELSE, WHILE, BREAK, MAIN // update token phase 2
+    IF, ELSE, WHILE, BREAK, MAIN, DO // update token phase 2
 };
 
 // Define keywords according to the specification (update basic phase 2)
@@ -129,6 +129,8 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 tokens.push_back({BREAK, identifier});
             } else if (identifier == "main") {
                 tokens.push_back({MAIN, identifier});
+            } else if (identifier == "do") {
+                tokens.push_back({DO, identifier});
             } else if (isBasicType(identifier)) {
                 tokens.push_back({BASIC, identifier});
             } else if (isKeyword(identifier)) {
@@ -267,6 +269,7 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
             case BIT_AND: tokenType = "bitAnd"; break;
             case BIT_OR: tokenType = "bitOr"; break;
             case LOGIC_NOT_EQUAL: tokenType = "logicNotEqual"; break;
+            case DO: tokenType = "Do"; break;
             case INVALID: tokenType = "INVALID"; break;
         }
         cout << tokenType << ": " << token.second << endl;
@@ -279,17 +282,17 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
     }
 }
 
-int main() {
-    // Test case
-    string code = R"(
-        int main() {
-        int zero;
-        zero = 1;
-        return 0;
-        }
-    )";
+// int main() {
+//     // Test case
+//     string code = R"(
+//         int main() {
+//         int zero;
+//         zero = 1;
+//         return 0;
+//         }
+//     )";
 
-    vector<pair<TokenType, string>> tokens = lexer(code);
-    printTokens(tokens);
-    return 0;
-}
+//     vector<pair<TokenType, string>> tokens = lexer(code);
+//     printTokens(tokens);
+//     return 0;
+// }
