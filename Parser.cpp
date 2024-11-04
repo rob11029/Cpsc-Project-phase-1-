@@ -161,15 +161,13 @@ void parseFactor() {
 
 // Main function
 int main() {
-    // Example code to parse
-    string code = "int main() { int x; if (x > 0) { x = x + 1; } }";
-    
-    // Get tokens from lexer
-    tokens = lexer(code);
-    getNextToken();
+    SymbolTable symbol_table; // Create symbol table instance
+    string code = "int main() { int x; if (x > 0) { x = x + 1; } }";  // Sample code to parse
 
-    // Start parsing
-    parseProgram();
+    tokens = lexer(code, symbol_table);  // Pass symbol_table to lexer
+    getNextToken();  // Initialize the first token
+
+    parseProgram();  // Start parsing with the main program rule
 
     if (currentToken.type == END_OF_FILE) {
         cout << "Parsing completed successfully!" << endl;
