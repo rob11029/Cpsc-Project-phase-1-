@@ -15,15 +15,7 @@ enum TokenType {
     GREATER_THAN, GREATER_THAN_EQ, LOGIC_EQUAL,
     LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR, LOGIC_NOT_EQUAL,
     BASIC, INTEGER, REAL, // update basic  phase 2
-    IF, ELSE, WHILE, BREAK, MAIN, DO, // update token phase 2
-    RETURN, NUMBER, END_OF_FILE,
-};
-
-struct Token {
-    TokenType type;
-    std::string lexeme;
-
-    Token(TokenType type, const std::string &lexeme) : type(type), lexeme(lexeme) {}
+    IF, ELSE, WHILE, BREAK, MAIN, DO // update token phase 2
 };
 
 // Define keywords according to the specification (update basic phase 2)
@@ -52,7 +44,7 @@ bool isKeyword(const string& lexeme) {
 }
 
 // Lexical analyzer function
-vector<Token> lexer(const string& code, SymbolTable& symbol_table)
+vector<pair<TokenType, string>> lexer(const string& code, SymbolTable& symbol_table) {
     vector<pair<TokenType, string>> tokens;
     string currentToken;
     int i = 0;
@@ -90,7 +82,7 @@ vector<Token> lexer(const string& code, SymbolTable& symbol_table)
                 comment += '\n';
                 i++;
             }
-            tokens.push_back(Token(COMMENT, comment));
+            tokens.push_back({COMMENT, comment});
             symbol_table.insert(comment, "COMMENT", comment, line, token_start, comment.length());
             continue;
         }
@@ -147,7 +139,7 @@ vector<Token> lexer(const string& code, SymbolTable& symbol_table)
                 column++;
             }
             if (identifier == "if") {
-                tokens.push_back(Token(IF, identifier));
+                tokens.push_back({IF, identifier});
                 symbol_table.insert(identifier, "IF", identifier, line, token_start, identifier.length());
             } else if (identifier == "else") {
                 tokens.push_back({ELSE, identifier});
@@ -305,7 +297,6 @@ vector<Token> lexer(const string& code, SymbolTable& symbol_table)
         }
         i++;
     }
-    tokens.push_back(Token(END_OF_FILE, "EOF"));  // Added END_OF_FILE token at the end
     return tokens;
 }
 
