@@ -16,6 +16,14 @@ enum TokenType {
     LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR, LOGIC_NOT_EQUAL,
     BASIC, INTEGER, REAL, // update basic  phase 2
     IF, ELSE, WHILE, BREAK, MAIN, DO // update token phase 2
+    NUMBER, END_OF_FILE,
+};
+
+struct Token {
+    TokenType type;
+    std::string lexeme;
+
+    Token(TokenType type, const std::string &lexeme) : type(type), lexeme(lexeme) {}
 };
 
 // Define keywords according to the specification (update basic phase 2)
