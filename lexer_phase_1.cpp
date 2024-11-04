@@ -44,21 +44,33 @@ bool isKeyword(const string& lexeme) {
 }
 
 // Lexical analyzer function
-vector<pair<TokenType, string>> lexer(const string& code) {
+vector<pair<TokenType, string>> lexer(const string& code, SymbolTable& symbol_table) {
     vector<pair<TokenType, string>> tokens;
+    string currentToken;
     int i = 0;
+    int line = 1;
+    int column = 1;
 
     while (i < code.length()) {
         char ch = code[i];
+        int start_column = column;
+
+        if (ch == '\n') {
+          line++;
+          column = 1;
+          i++;
+        }
 
         // Skip whitespace
         if (isspace(ch)) {
+            column++;
             i++;
             continue;
         }
 
         // Check for comments (//)
         if (i + 1 < code.length() && code[i] == '/' && code[i + 1] == '/') {
+            int token_start = column;
             string comment;
             comment += "//";
             i += 2;
@@ -71,18 +83,21 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 i++;
             }
             tokens.push_back({COMMENT, comment});
+            symbol_table.insert(comment, "COMMENT", comment, line, token_start, comment.length());
             continue;
         }
 
         // Handle numbers (integers and reals)
         if (isdigit(ch) || (ch == '.' && i + 1 < code.length() && isdigit(code[i + 1]))) {
             string number;
+            int token_start = column;
             bool isReal = false;
 
             // Handle leading digits
             while (i < code.length() && isdigit(code[i])) {
                 number += code[i];
                 i++;
+                column++;
             }
 
             // Check for decimal point
@@ -90,6 +105,7 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 isReal = true;
                 number += code[i];
                 i++;
+                column++;
 
                 while(i < code.length() && isdigit(code[i])) {
                     number += code[i];
@@ -108,117 +124,176 @@ vector<pair<TokenType, string>> lexer(const string& code) {
                 }
             }
             tokens.push_back({isReal ? REAL : INTEGER, number});
+            symbol_table.insert(number, "INTEGER", number, line, token_start, number.length());
             continue;
         }
         // Handle identifiers
         if (isalpha(ch)) {
             string identifier;
+            int token_start = column;
             identifier += ch;
             i++;
             while (i < code.length() && (isalnum(code[i]))) {
                 identifier += code[i];
                 i++;
+                column++;
             }
             if (identifier == "if") {
                 tokens.push_back({IF, identifier});
+                symbol_table.insert(identifier, "IF", identifier, line, token_start, identifier.length());
             } else if (identifier == "else") {
                 tokens.push_back({ELSE, identifier});
+                symbol_table.insert(identifier, "ELSE", identifier, line, token_start, identifier.length());
             } else if (identifier == "while") {
                 tokens.push_back({WHILE, identifier});
+                symbol_table.insert(identifier, "WHILE", identifier, line, token_start, identifier.length());
             } else if (identifier == "break") {
                 tokens.push_back({BREAK, identifier});
+                symbol_table.insert(identifier, "BREAK", identifier, line, token_start, identifier.length());
             } else if (identifier == "main") {
                 tokens.push_back({MAIN, identifier});
+                symbol_table.insert(identifier, "MAIN", identifier, line, token_start, identifier.length());
             } else if (identifier == "do") {
                 tokens.push_back({DO, identifier});
+                symbol_table.insert(identifier, "DO", identifier, line, token_start, identifier.length());
             } else if (isBasicType(identifier)) {
                 tokens.push_back({BASIC, identifier});
+                symbol_table.insert(identifier, "BASIC", identifier, line, token_start, identifier.length());
             } else if (isKeyword(identifier)) {
                 tokens.push_back({KEYWORD, identifier});
+                symbol_table.insert(identifier, "KEYWORD", identifier, line, token_start, identifier.length());
             } else {
                 tokens.push_back({IDENTIFIER, identifier});
+                symbol_table.insert(identifier, "IDENTIFIER", identifier, line, token_start, identifier.length());
             }
             continue;
         }
 
         // Handle delimiters and operators
-        if (ch == '(') tokens.push_back({LEFT_PAREN, "("});
-        else if (ch == ')') tokens.push_back({RIGHT_PAREN, ")"});
-        else if (ch == '[') tokens.push_back({LEFT_BRACKET, "["});
-        else if (ch == ']') tokens.push_back({RIGHT_BRACKET, "]"});
-        else if (ch == '{') tokens.push_back({LEFT_BRACE, "{"});
-        else if (ch == '}') tokens.push_back({RIGHT_BRACE, "}"});
-        else if (ch == ';') tokens.push_back({SEMICOLON, ";"});
-        else if (ch == ',') tokens.push_back({COMMA, ","});
+        int token_start = column;
+        if (ch == '(') {
+          tokens.push_back({LEFT_PAREN, "("});
+          symbol_table.insert("(", "LEFT_PAREN", "(", line, token_start, 1);
+          } else if (ch == ')') {
+          tokens.push_back({RIGHT_PAREN, ")"});
+          symbol_table.insert(")", "RIGHT_PAREN", ")", line, token_start, 1);
+        } else if (ch == '[') {
+          tokens.push_back({LEFT_BRACKET, "["});
+          symbol_table.insert("[", "LEFT_BRACKET", "[", line, token_start, 1);
+        } else if (ch == ']') {
+          tokens.push_back({RIGHT_BRACKET, "]"});
+          symbol_table.insert("]", "RIGHT_BRACKET", "]", line, token_start, 1);
+        } else if (ch == '{') {
+          tokens.push_back({LEFT_BRACE, "{"});
+          symbol_table.insert("{", "LEFT_BRACE", "}", line, token_start, 1);
+        }
+        else if (ch == '}') {
+          tokens.push_back({RIGHT_BRACE, "}"});
+          symbol_table.insert("}", "RIGHT_BRACE", "}", line, token_start, 1);
+        }
+        else if (ch == ';') {
+          tokens.push_back({SEMICOLON, ";"});
+          symbol_table.insert(";", "SEMICOLON", ";", line, token_start, 1);
+        }
+        else if (ch == ',') {
+          tokens.push_back({COMMA, ","});
+          symbol_table.insert(",", "COMMA", ",", line, token_start, 1);
+        }
         else if (ch == '+') {
             if (i + 1 < code.length() && code[i + 1] == '+') {
                 tokens.push_back({INCREMENT, "++"});
+                symbol_table.insert("++", "INCREMENT", "++", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({PLUS, "+"});
+                symbol_table.insert("+", "PLUS", "+", line, token_start, 1);
             }
         }
         else if (ch == '-') {
             if (i + 1 < code.length() && code[i + 1] == '-') {
                 tokens.push_back({DECREMENT, "--"});
+                symbol_table.insert("--", "DECREMENT", "--", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({MINUS, "-"});
+                symbol_table.insert("-", "MINUS", "-", line, token_start, 1);
             }
         }
-        else if (ch == '*') tokens.push_back({MULTIPLY, "*"});
-        else if (ch == '/') tokens.push_back({DIVIDE, "/"});
-        else if (ch == '%') tokens.push_back({MODULUS, "%"});
+        else if (ch == '*') {
+          tokens.push_back({MULTIPLY, "*"});
+          symbol_table.insert("*", "MULTIPLY", "*", line, token_start, 1);
+        }
+        else if (ch == '/') {
+          tokens.push_back({DIVIDE, "/"});
+          symbol_table.insert("/", "DIVIDE", "/", line, token_start, 1);
+        }
+        else if (ch == '%') {
+          tokens.push_back({MODULUS, "%"});
+          symbol_table.insert("%", "MODULUS", "%", line, token_start, 1);
+        }
         else if (ch == '<') {
             if (i + 1 < code.length() && code[i + 1] == '=') {
                 tokens.push_back({LESS_THAN_EQ, "<="});
+                symbol_table.insert("<=", "LESS_THAN_EQ", "<=", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({LESS_THAN, "<"});
+                symbol_table.insert("<", "LESS_THAN", "<", line, token_start, 1);
             }
         }
         else if (ch == '>') {
             if (i + 1 < code.length() && code[i + 1] == '=') {
                 tokens.push_back({GREATER_THAN_EQ, ">="});
+                symbol_table.insert(">=", "GREATER_THAN_EQ", ">=", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({GREATER_THAN, ">"});
+                symbol_table.insert(">", "GREATER_THAN", ">", line, token_start, 1);
             }
         }
         else if (ch == '=') {
             if (i + 1 < code.length() && code[i + 1] == '=') {
                 tokens.push_back({LOGIC_EQUAL, "=="});
+                symbol_table.insert("=", "LOGIC_EQUAL", "=", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({ASSIGNMENT, "="});
+                symbol_table.insert("=", "ASSIGNMENT", "=", line, token_start, 1);
             }
         }
         else if (ch == '&') {
             if (i + 1 < code.length() && code[i + 1] == '&') {
                 tokens.push_back({LOGIC_AND, "&&"});
+                symbol_table.insert("&&", "LOGIC_AND", "&&", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({BIT_AND, "&"});
+                symbol_table.insert("&", "BIT_AND", "&", line, token_start, 1);
             }
         }
         else if (ch == '|') {
             if (i + 1 < code.length() && code[i + 1] == '|') {
                 tokens.push_back({LOGIC_OR, "||"});
+                symbol_table.insert("||", "LOGIC_OR", "||", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({BIT_OR, "|"});
+                symbol_table.insert("|", "BIT_OR", "|", line, token_start, 1);
             }
         }
         else if (ch == '!'){
             if (i + 1 < code.length() && code[i + 1] == '=') {
                 tokens.push_back({LOGIC_NOT_EQUAL, "!="});
+                symbol_table.insert("!=", "LOGIC_NOT_EQUAL", "!=", line, token_start, 2);
                 i++;
             } else {
                 tokens.push_back({LOGIC_NOT, "!"});
+                symbol_table.insert("!", "LOGIC_NOT", "!", line, token_start, 1);
             }
         }
         else if (ch != '.') { // Skip standalone dots as they're handled in number parsing
             tokens.push_back({INVALID, string(1, ch)});
+            symbol_table.insert(string(1, ch), "INVALID", string(1, ch), line, token_start, string(1, ch).length());
         }
         i++;
     }
@@ -229,7 +304,6 @@ vector<pair<TokenType, string>> lexer(const string& code) {
 void printTokens(const vector<pair<TokenType, string>>& tokens) {
     for (const auto& token : tokens) {
         string tokenType;
-        int index;
         switch (token.first) {
             case BASIC: tokenType = "Basic"; break;
             case IF: tokenType = "If"; break;
@@ -276,25 +350,22 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
         cout << tokenType << ": " << token.second << endl;
 
         // Insert into symbol table
-        SymbolTable symbol;
-        #line 284
-        symbol.insert(token.second, tokenType, token.second, __LINE__, index, token.second.length());
-        symbol.find(token.second);
-        index++;
     }
 }
 
-// int main() {
-//     // Test case
-//     string code = R"(
-//         int main() {
-//         int zero;
-//         zero = 1;
-//         return 0;
-//         }
-//     )";
+int main() {
+  SymbolTable symbol_table;
 
-//     vector<pair<TokenType, string>> tokens = lexer(code);
-//     printTokens(tokens);
-//     return 0;
-// }
+  // Test case
+  string code = R"(
+    int main() {
+    int zero;
+    zero = 1;
+    return 0;
+    }
+  )";
+
+     vector<pair<TokenType, string>> tokens = lexer(code, symbol_table);
+     printTokens(tokens);
+     return 0;
+ }
