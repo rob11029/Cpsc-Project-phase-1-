@@ -52,7 +52,7 @@ bool isKeyword(const string& lexeme) {
 }
 
 // Lexical analyzer function
-vector<pair<TokenType, string>> lexer(const string& code, SymbolTable& symbol_table) {
+vector<Token> lexer(const string& code, SymbolTable& symbol_table)
     vector<pair<TokenType, string>> tokens;
     string currentToken;
     int i = 0;
@@ -90,7 +90,7 @@ vector<pair<TokenType, string>> lexer(const string& code, SymbolTable& symbol_ta
                 comment += '\n';
                 i++;
             }
-            tokens.push_back({COMMENT, comment});
+            tokens.push_back(Token(COMMENT, comment));
             symbol_table.insert(comment, "COMMENT", comment, line, token_start, comment.length());
             continue;
         }
@@ -147,7 +147,7 @@ vector<pair<TokenType, string>> lexer(const string& code, SymbolTable& symbol_ta
                 column++;
             }
             if (identifier == "if") {
-                tokens.push_back({IF, identifier});
+                tokens.push_back(Token(IF, identifier));
                 symbol_table.insert(identifier, "IF", identifier, line, token_start, identifier.length());
             } else if (identifier == "else") {
                 tokens.push_back({ELSE, identifier});
@@ -305,6 +305,7 @@ vector<pair<TokenType, string>> lexer(const string& code, SymbolTable& symbol_ta
         }
         i++;
     }
+    tokens.push_back(Token(END_OF_FILE, "EOF"));  // Added END_OF_FILE token at the end
     return tokens;
 }
 
