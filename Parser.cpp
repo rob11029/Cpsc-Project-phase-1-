@@ -15,7 +15,7 @@ void getNextToken() {
     if (tokenIndex < tokens.size()) {
         currentToken = tokens[tokenIndex++];
     } else {
-        currentToken = Token(END_OF_FILE, "");
+        currentToken = Token(END_OF_FILE, "EOF");
     }
 }
 
