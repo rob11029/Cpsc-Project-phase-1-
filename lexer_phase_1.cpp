@@ -15,7 +15,7 @@ enum TokenType {
     GREATER_THAN, GREATER_THAN_EQ, LOGIC_EQUAL,
     LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR, LOGIC_NOT_EQUAL,
     BASIC, INTEGER, REAL, // update basic  phase 2
-    IF, ELSE, WHILE, BREAK, MAIN, DO // update token phase 2
+    IF, ELSE, WHILE, BREAK, MAIN, DO, // update token phase 2
     NUMBER, END_OF_FILE,
 };
 
@@ -361,19 +361,19 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
     }
 }
 
-int main() {
-  SymbolTable symbol_table;
+// int main() {
+//   SymbolTable symbol_table;
 
-  // Test case
-  string code = R"(
-    int main() {
-    int zero;
-    zero = 1;
-    return 0;
-    }
-  )";
+//   // Test case
+//   string code = R"(
+//     int main() {
+//     int zero;
+//     zero = 1;
+//     return 0;
+//     }
+//   )";
 
-     vector<pair<TokenType, string>> tokens = lexer(code, symbol_table);
-     printTokens(tokens);
-     return 0;
- }
+//      vector<pair<TokenType, string>> tokens = lexer(code, symbol_table);
+//      printTokens(tokens);
+//      return 0;
+//  }
