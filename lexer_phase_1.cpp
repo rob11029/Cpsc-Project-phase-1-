@@ -15,7 +15,8 @@ enum TokenType {
     GREATER_THAN, GREATER_THAN_EQ, LOGIC_EQUAL,
     LOGIC_AND, LOGIC_OR, LOGIC_NOT, BIT_AND, BIT_OR, LOGIC_NOT_EQUAL,
     BASIC, INTEGER, REAL, // update basic  phase 2
-    IF, ELSE, WHILE, BREAK, MAIN, DO // update token phase 2
+    IF, ELSE, WHILE, BREAK, MAIN, DO, // update token phase 2
+    RETURN // add RETURN token
 };
 
 // Define keywords according to the specification (update basic phase 2)
@@ -24,7 +25,7 @@ vector<string> basic = {
 };
 
 vector<string> keywords = {
-    "return", "switch", "case", "for", "goto", "unsigned", "continue",
+    "switch", "case", "for", "goto", "unsigned", "continue",
     "do" // add keywords for phase 2
 };
 
@@ -41,6 +42,10 @@ bool isKeyword(const string& lexeme) {
         if (lexeme == keyword) return true;
     }
     return false;
+}
+// Function to check if a lexeme is a basic type
+bool isReturn(const string& lexeme) {
+    return lexeme == "return";
 }
 
 // Lexical analyzer function
@@ -159,6 +164,9 @@ vector<pair<TokenType, string>> lexer(const string& code, SymbolTable& symbol_ta
             } else if (isBasicType(identifier)) {
                 tokens.push_back({BASIC, identifier});
                 symbol_table.insert(identifier, "BASIC", identifier, line, token_start, identifier.length());
+            } else if (isReturn(identifier)) {
+                tokens.push_back({RETURN, identifier});
+                symbol_table.insert(identifier, "RETURN", identifier, line, token_start, identifier.length());
             } else if (isKeyword(identifier)) {
                 tokens.push_back({KEYWORD, identifier});
                 symbol_table.insert(identifier, "KEYWORD", identifier, line, token_start, identifier.length());
@@ -305,6 +313,7 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
     for (const auto& token : tokens) {
         string tokenType;
         switch (token.first) {
+            case RETURN: tokenType = "Return"; break;
             case BASIC: tokenType = "Basic"; break;
             case IF: tokenType = "If"; break;
             case ELSE: tokenType = "Else"; break;
@@ -353,19 +362,19 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
     }
 }
 
-// int main() {
-//   SymbolTable symbol_table;
+int main() {
+  SymbolTable symbol_table;
 
-//   // Test case
-//   string code = R"(
-//     int main() {
-//     int zero;
-//     zero = 1;
-//     return 0;
-//     }
-//   )";
+  // Test case
+  string code = R"(
+    int main() {
+    int zero;
+    zero = 1;
+    return 0;
+    }
+  )";
 
-//      vector<pair<TokenType, string>> tokens = lexer(code, symbol_table);
-//      printTokens(tokens);
-//      return 0;
-//  }
+     vector<pair<TokenType, string>> tokens = lexer(code, symbol_table);
+     printTokens(tokens);
+     return 0;
+ }
