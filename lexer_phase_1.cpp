@@ -361,20 +361,3 @@ void printTokens(const vector<pair<TokenType, string>>& tokens) {
         // Insert into symbol table
     }
 }
-
-int main() {
-  SymbolTable symbol_table;
-
-  // Test case
-  string code = R"(
-    int main() {
-    int zero;
-    zero = 1;
-    return 0;
-    }
-  )";
-
-     vector<pair<TokenType, string>> tokens = lexer(code, symbol_table);
-     printTokens(tokens);
-     return 0;
- }
