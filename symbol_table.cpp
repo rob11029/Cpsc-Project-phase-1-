@@ -58,25 +58,44 @@ string find(string l) {
   return "-1";
 }
 
+
+// bool insert(string l, string t, string v, int lNo, int c_s_n, int lgh) {
+//   int index = getIndex(l);
+//   Node* x = new Node(l, t, v, lNo, c_s_n, lgh);
+
+//   if (head[index] == NULL) {
+//     head[index] = x;
+//     cout << " Inserted " << l << " in the symbol table" << endl;
+//     return true;
+//   } else {
+//     Node* start = head[index];
+//     while (start->next != NULL) start = start->next;
+
+//     start->next = x;
+//     cout << " Inserted " << l << " in the symbol table" << endl;
+//     return true;
+//   }
+//   return false;
+// }
+
 // Function to insert lexemes, token, lexeme value / lexeme itself, line number, character start number,
 // and lexeme length into Symbol Table
+// phase 3 update
+
 bool insert(string l, string t, string v, int lNo, int c_s_n, int lgh) {
-  int index = getIndex(l);
-  Node* x = new Node(l, t, v, lNo, c_s_n, lgh);
+    int index = getIndex(l);
+    Node* x = new Node(l, t, v, lNo, c_s_n, lgh);
 
-  if (head[index] == NULL) {
-    head[index] = x;
-    cout << " Inserted " << l << " in the symbol table" << endl;
-    return true;
-  } else {
-    Node* start = head[index];
-    while (start->next != NULL) start = start->next;
-
-    start->next = x;
-    cout << " Inserted " << l << " in the symbol table" << endl;
-    return true;
-  }
-  return false;
+    if (head[index] == NULL) {
+        head[index] = x;
+        return true;
+    } else {
+        Node* start = head[index];
+        while (start->next != NULL) start = start->next;
+        start->next = x;
+        return true;
+    }
+    return false;
 }
 
 // Function to get index based on the lexeme
