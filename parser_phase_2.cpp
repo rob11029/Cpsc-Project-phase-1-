@@ -991,7 +991,6 @@ int main() {
     string code = R"(
         int main() {
         int zero;
-        zero = 1;
         return 0;
         }
     )";
