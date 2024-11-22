@@ -42,18 +42,13 @@ void CSTNode::addChild(CSTNode* child) {
 }
 
 void CSTNode::printTree(int depth) const {
-    string indent(depth * 2, ' ');  // Reduced indentation for compactness
-    
+    string indent(depth * 2, ' ');  
     cout << indent;
     if (depth > 0) {
-        cout << "|-- ";  // Simplified tree connector
+        cout << "|-- ";  
     }
     
-    if (type == NodeType::TERMINAL) {
-        cout << "[" << value << "]" << endl;
-    } else {
-        cout << "[" << nodeTypeToString(type) << "]" << endl;
-    }
+    cout << "[" << (type == NodeType::TERMINAL ? value : nodeTypeToString(type)) << "]" << endl;
     
     // Print children without epsilon nodes
     for (const auto* child : children) {
@@ -62,7 +57,6 @@ void CSTNode::printTree(int depth) const {
         }
     }
 }
-
 
 NodeType CSTNode::getType() const { return type; }
 string CSTNode::getValue() const { return value; }
@@ -1012,7 +1006,7 @@ int main() {
     try {
         CSTNode* syntaxTree = parser.parse();
         if (syntaxTree) {
-            cout << "\n=== Concrete Syntax Tree ===" << endl;
+            cout << "\nConcrete Syntax Tree" << endl;
             cout << "-------------------------" << endl;
             syntaxTree->printTree(0);
             cout << "-------------------------" << endl;
