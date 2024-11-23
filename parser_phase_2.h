@@ -8,9 +8,12 @@
 
 // Node types based on our grammar
 enum class NodeType {
-    PROGRAM, BLOCK, DECLS, DECL, TYPE, STMTS, STMT, LOC,
-    BOOL, JOIN, EQUALITY, REL, EXPR, TERM, UNARY, FACTOR,
-    TERMINAL, EPSILON
+    PROGRAM, BLOCK, BLOCK_PRIME, BLOCK_DOUBLE_PRIME, DECLS,
+    DECLS_PRIME, DECL, TYPE, TYPE_PRIME, STMTS, STMTS_PRIME,
+    STMT, STMT_PRIME, LOC, LOC_PRIME, BOOL, BOOL_PRIME, JOIN, JOIN_PRIME,
+    EQUALITY, EQUALITY_PRIME, EQUALITY_DOUBLE_PRIME, REL, REL_PRIME,
+    EXPR, EXPR_PRIME, EXPR_DOUBLE_PRIME, TERM, TERM_PRIME,
+    TERM_DOUBLE_PRIME, UNARY, FACTOR, TERMINAL, EPSILON
 };
 
 // Forward declaration of functions
@@ -74,7 +77,7 @@ private:
     CSTNode* parseTerm(); // productions 20
     CSTNode* parseUnary(); // productions 21-23
     CSTNode* parseFactor(); // productions 24-29
-    
+
     // Prime and double-prime productions
     CSTNode* parseBlockPrime(); // productions 30-37
     CSTNode* parseBlockDoublePrime(); // productions 38-46
@@ -98,4 +101,4 @@ public:
     CSTNode* parse();
 };
 
-#endif 
+#endif
