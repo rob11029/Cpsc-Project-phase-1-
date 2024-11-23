@@ -27,10 +27,10 @@ string nodeTypeToString(NodeType type) {
 }
 
 // CSTNode implementation
-CSTNode::CSTNode(NodeType t) 
+CSTNode::CSTNode(NodeType t)
     : type(t), tokenType(INVALID) {}
 
-CSTNode::CSTNode(TokenType tt, const string& val) 
+CSTNode::CSTNode(TokenType tt, const string& val)
     : type(NodeType::TERMINAL), value(val), tokenType(tt) {}
 
 CSTNode* CSTNode::createEpsilon() {
@@ -42,14 +42,14 @@ void CSTNode::addChild(CSTNode* child) {
 }
 
 void CSTNode::printTree(int depth) const {
-    string indent(depth * 2, ' ');  
+    string indent(depth * 2, ' ');
     cout << indent;
     if (depth > 0) {
-        cout << "|-- ";  
+        cout << "|-- ";
     }
-    
+
     cout << "[" << (type == NodeType::TERMINAL ? value : nodeTypeToString(type)) << "]" << endl;
-    
+
     // Print children without epsilon nodes
     for (const auto* child : children) {
         if (child && child->type != NodeType::EPSILON) {
@@ -71,7 +71,7 @@ CSTNode::~CSTNode() {
 }
 
 // Parser implementation
-Parser::Parser(const vector<pair<TokenType, string>>& tokenStream, SymbolTable& symTable) 
+Parser::Parser(const vector<pair<TokenType, string>>& tokenStream, SymbolTable& symTable)
     : tokens(tokenStream), currentPos(0), symbolTable(symTable) {}
 
 CSTNode* Parser::createTerminal() {
@@ -117,48 +117,48 @@ void Parser::error(const string& message) {
 // Grammar production functions
 CSTNode* Parser::parseProgram() {
     CSTNode* node = new CSTNode(NodeType::PROGRAM);
-    
+
     if (!peek(BASIC)) {
         error("Expected basic type (int, float, char, void)");
         return nullptr;
     }
-    
+
     CSTNode* typeNode = new CSTNode(BASIC, tokens[currentPos].second);
     node->addChild(typeNode);
     currentPos++;
-    
+
     if (!peek(MAIN)) {
         error("Expected 'main'");
         return nullptr;
     }
-    
+
     CSTNode* mainNode = new CSTNode(MAIN, tokens[currentPos].second);
     node->addChild(mainNode);
     currentPos++;
-    
+
     expect(LEFT_PAREN);
     node->addChild(new CSTNode(LEFT_PAREN, "("));
-    
+
     expect(RIGHT_PAREN);
     node->addChild(new CSTNode(RIGHT_PAREN, ")"));
-    
+
     CSTNode* blockNode = parseBlock();
     if (!blockNode) {
         error("Invalid block");
         return nullptr;
     }
     node->addChild(blockNode);
-    
+
     return node;
 }
 
 
 CSTNode* Parser::parseBlock() {
     CSTNode* node = new CSTNode(NodeType::BLOCK);
-    
+
     expect(LEFT_BRACE);
     node->addChild(new CSTNode(LEFT_BRACE, "{"));
-    
+
     // Parse declarations if they exist
     if (peek(BASIC)) {
         CSTNode* declsNode = parseDecls();
@@ -168,7 +168,7 @@ CSTNode* Parser::parseBlock() {
         }
         node->addChild(declsNode);
     }
-    
+
     // Parse statements
     CSTNode* stmtsNode = parseStmts();
     if (!stmtsNode) {
@@ -176,131 +176,131 @@ CSTNode* Parser::parseBlock() {
         return nullptr;
     }
     node->addChild(stmtsNode);
-    
+
     expect(RIGHT_BRACE);
     node->addChild(new CSTNode(RIGHT_BRACE, "}"));
-    
+
     return node;
 }
 
 CSTNode* Parser::parseDecls() {
     CSTNode* node = new CSTNode(NodeType::DECLS);
-    
+
     CSTNode* declNode = parseDecl();
     if (!declNode) return nullptr;
     node->addChild(declNode);
-    
+
     CSTNode* declsPrimeNode = parseDeclsPrime();
     if (!declsPrimeNode) return nullptr;
     node->addChild(declsPrimeNode);
-    
+
     return node;
 }
 
 CSTNode* Parser::parseDecl() {
     CSTNode* node = new CSTNode(NodeType::DECL);
-    
+
     CSTNode* typeNode = parseType();
     if (!typeNode) return nullptr;
     node->addChild(typeNode);
-    
+
     if (!match(IDENTIFIER)) {
         error("Expected identifier");
         return nullptr;
     }
     node->addChild(new CSTNode(IDENTIFIER, tokens[currentPos-1].second));
-    
+
     expect(SEMICOLON);
     node->addChild(new CSTNode(SEMICOLON, ";"));
-    
+
     return node;
 }
 
 CSTNode* Parser::parseType() {
     CSTNode* node = new CSTNode(NodeType::TYPE);
-    
+
     if (!match(BASIC)) {
         error("Expected basic type");
         return nullptr;
     }
     node->addChild(new CSTNode(BASIC, tokens[currentPos-1].second));
-    
+
     CSTNode* typePrimeNode = parseTypePrime();
     if (!typePrimeNode) return nullptr;
     node->addChild(typePrimeNode);
-    
+
     return node;
 }
 
 CSTNode* Parser::parseStmts() {
-    if (!(peek(IF) || peek(IDENTIFIER) || peek(WHILE) || peek(DO) || 
+    if (!(peek(IF) || peek(IDENTIFIER) || peek(WHILE) || peek(DO) ||
           peek(BREAK) || peek(RETURN) || peek(LEFT_BRACE))) {
         return nullptr;
     }
 
     CSTNode* node = new CSTNode(NodeType::STMTS);
-    
+
     CSTNode* stmtNode = parseStmt();
     if (!stmtNode) return nullptr;
     node->addChild(stmtNode);
-    
+
     // Recursively parse more statements if they exist
     CSTNode* moreStmts = parseStmts();
     if (moreStmts) {
         node->addChild(moreStmts);
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseStmt() {
     CSTNode* node = new CSTNode(NodeType::STMT);
-    
+
     if (match(IF)) {
         expect(LEFT_PAREN);
         node->addChild(new CSTNode(LEFT_PAREN, "("));
-        
+
         CSTNode* boolNode = parseBool();
         if (!boolNode) return nullptr;
         node->addChild(boolNode);
-        
+
         expect(RIGHT_PAREN);
         node->addChild(new CSTNode(RIGHT_PAREN, ")"));
-        
+
         CSTNode* stmtNode = parseStmt();
         if (!stmtNode) return nullptr;
         node->addChild(stmtNode);
-        
+
         CSTNode* stmtPrimeNode = parseStmtPrime();
         if (!stmtPrimeNode) return nullptr;
         node->addChild(stmtPrimeNode);
-    } 
+    }
     else if (peek(IDENTIFIER)) {
         CSTNode* locNode = parseLoc();
         if (!locNode) return nullptr;
         node->addChild(locNode);
-        
+
         expect(ASSIGNMENT);
         node->addChild(new CSTNode(ASSIGNMENT, "="));
-        
+
         CSTNode* boolNode = parseBool();
         if (!boolNode) return nullptr;
         node->addChild(boolNode);
-        
+
         expect(SEMICOLON);
         node->addChild(new CSTNode(SEMICOLON, ";"));
     }
     else if (match(WHILE)) {
         expect(LEFT_PAREN);
         node->addChild(new CSTNode(LEFT_PAREN, "("));
-        
+
         CSTNode* boolNode = parseBool();
         if (!boolNode) return nullptr;
         node->addChild(boolNode);
-        
+
         expect(RIGHT_PAREN);
         node->addChild(new CSTNode(RIGHT_PAREN, ")"));
-        
+
         CSTNode* stmtNode = parseStmt();
         if (!stmtNode) return nullptr;
         node->addChild(stmtNode);
@@ -309,30 +309,31 @@ CSTNode* Parser::parseStmt() {
         CSTNode* stmtNode = parseStmt();
         if (!stmtNode) return nullptr;
         node->addChild(stmtNode);
-        
+
         expect(WHILE);
         node->addChild(new CSTNode(WHILE, "while"));
-        
+
         expect(LEFT_PAREN);
         node->addChild(new CSTNode(LEFT_PAREN, "("));
-        
+
         CSTNode* boolNode = parseBool();
         if (!boolNode) return nullptr;
         node->addChild(boolNode);
-        
+
         expect(RIGHT_PAREN);
         node->addChild(new CSTNode(RIGHT_PAREN, ")"));
-        
+
         expect(SEMICOLON);
         node->addChild(new CSTNode(SEMICOLON, ";"));
     }
     else if (match(RETURN)) {
+        node->addChild(new CSTNode(RETURN, "return"));
         if (!match(INTEGER)) {
             error("Expected number after return");
             return nullptr;
         }
         node->addChild(new CSTNode(INTEGER, tokens[currentPos-1].second));
-        
+
         expect(SEMICOLON);
         node->addChild(new CSTNode(SEMICOLON, ";"));
     }
@@ -349,39 +350,39 @@ CSTNode* Parser::parseStmt() {
         error("Invalid statement");
         return nullptr;
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseLoc() {
     CSTNode* node = new CSTNode(NodeType::LOC);
-    
+
     if (!match(IDENTIFIER)) {
         error("Expected identifier");
         return nullptr;
     }
     node->addChild(new CSTNode(IDENTIFIER, tokens[currentPos-1].second));
-    
+
     CSTNode* locPrime = parseLocPrime();
     if (locPrime) {
         node->addChild(locPrime);
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseBool() {
     CSTNode* joinNode = parseJoin();
     if (!joinNode) return nullptr;
-    
+
     // If there's a logical OR, create a Bool node
     if (peek(LOGIC_OR)) {
         CSTNode* node = new CSTNode(NodeType::BOOL);
         node->addChild(joinNode);
-        
+
         match(LOGIC_OR);
         node->addChild(new CSTNode(LOGIC_OR, "||"));
-        
+
         CSTNode* rightJoin = parseJoin();
         if (!rightJoin) {
             delete node;
@@ -390,22 +391,22 @@ CSTNode* Parser::parseBool() {
         node->addChild(rightJoin);
         return node;
     }
-    
+
     return joinNode;
 }
 
 CSTNode* Parser::parseJoin() {
     CSTNode* equalityNode = parseEquality();
     if (!equalityNode) return nullptr;
-    
+
     // If there's a logical AND, create a Join node
     if (peek(LOGIC_AND)) {
         CSTNode* node = new CSTNode(NodeType::JOIN);
         node->addChild(equalityNode);
-        
+
         match(LOGIC_AND);
         node->addChild(new CSTNode(LOGIC_AND, "&&"));
-        
+
         CSTNode* rightEquality = parseEquality();
         if (!rightEquality) {
             delete node;
@@ -414,23 +415,23 @@ CSTNode* Parser::parseJoin() {
         node->addChild(rightEquality);
         return node;
     }
-    
+
     return equalityNode;
 }
 
 CSTNode* Parser::parseEquality() {
     CSTNode* relNode = parseRel();
     if (!relNode) return nullptr;
-    
+
     // If there's an equality operator, create an Equality node
     if (peek(LOGIC_EQUAL) || peek(LOGIC_NOT_EQUAL)) {
         CSTNode* node = new CSTNode(NodeType::EQUALITY);
         node->addChild(relNode);
-        
+
         TokenType op = tokens[currentPos].first;
         match(op);
         node->addChild(new CSTNode(op, tokens[currentPos-1].second));
-        
+
         CSTNode* rightRel = parseRel();
         if (!rightRel) {
             delete node;
@@ -439,24 +440,24 @@ CSTNode* Parser::parseEquality() {
         node->addChild(rightRel);
         return node;
     }
-    
+
     return relNode;
 }
 
 CSTNode* Parser::parseRel() {
     CSTNode* exprNode = parseExpr();
     if (!exprNode) return nullptr;
-    
+
     // If there's a relational operator, create a Rel node
-    if (peek(LESS_THAN) || peek(LESS_THAN_EQ) || 
+    if (peek(LESS_THAN) || peek(LESS_THAN_EQ) ||
         peek(GREATER_THAN) || peek(GREATER_THAN_EQ)) {
         CSTNode* node = new CSTNode(NodeType::REL);
         node->addChild(exprNode);
-        
+
         TokenType op = tokens[currentPos].first;
         match(op);
         node->addChild(new CSTNode(op, tokens[currentPos-1].second));
-        
+
         CSTNode* rightExpr = parseExpr();
         if (!rightExpr) {
             delete node;
@@ -465,7 +466,7 @@ CSTNode* Parser::parseRel() {
         node->addChild(rightExpr);
         return node;
     }
-    
+
     // No relational operator, just return the expression
     return exprNode;
 }
@@ -482,12 +483,12 @@ CSTNode* Parser::parseExpr() {
     // Create expression node only if we have operators
     CSTNode* node = new CSTNode(NodeType::EXPR);
     node->addChild(termNode);
-    
+
     while (peek(PLUS) || peek(MINUS)) {
         TokenType op = tokens[currentPos].first;
         match(op);
         node->addChild(new CSTNode(op, tokens[currentPos-1].second));
-        
+
         CSTNode* nextTerm = parseTerm();
         if (!nextTerm) {
             delete node;
@@ -495,7 +496,7 @@ CSTNode* Parser::parseExpr() {
         }
         node->addChild(nextTerm);
     }
-    
+
     return node;
 }
 
@@ -511,12 +512,12 @@ CSTNode* Parser::parseTerm() {
     // Create term node only if we have operators
     CSTNode* node = new CSTNode(NodeType::TERM);
     node->addChild(unaryNode);
-    
+
     while (peek(MULTIPLY) || peek(DIVIDE)) {
         TokenType op = tokens[currentPos].first;
         match(op);
         node->addChild(new CSTNode(op, tokens[currentPos-1].second));
-        
+
         CSTNode* nextUnary = parseUnary();
         if (!nextUnary) {
             delete node;
@@ -524,23 +525,23 @@ CSTNode* Parser::parseTerm() {
         }
         node->addChild(nextUnary);
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseUnary() {
     CSTNode* node = new CSTNode(NodeType::UNARY);
-    
+
     if (match(LOGIC_NOT)) {
         node->addChild(new CSTNode(LOGIC_NOT, "!"));
-        
+
         CSTNode* unaryNode = parseUnary();
         if (!unaryNode) return nullptr;
         node->addChild(unaryNode);
     }
     else if (match(MINUS)) {
         node->addChild(new CSTNode(MINUS, "-"));
-        
+
         CSTNode* unaryNode = parseUnary();
         if (!unaryNode) return nullptr;
         node->addChild(unaryNode);
@@ -550,7 +551,7 @@ CSTNode* Parser::parseUnary() {
         if (!factorNode) return nullptr;
         node->addChild(factorNode);
     }
-    
+
     return node;
 }
 
@@ -558,14 +559,14 @@ CSTNode* Parser::parseFactor() {
     if (match(LEFT_PAREN)) {
         CSTNode* node = new CSTNode(NodeType::FACTOR);
         node->addChild(new CSTNode(LEFT_PAREN, "("));
-        
+
         CSTNode* boolNode = parseBool();
         if (!boolNode) {
             delete node;
             return nullptr;
         }
         node->addChild(boolNode);
-        
+
         expect(RIGHT_PAREN);
         node->addChild(new CSTNode(RIGHT_PAREN, ")"));
         return node;
@@ -579,55 +580,55 @@ CSTNode* Parser::parseFactor() {
     else if (peek(IDENTIFIER)) {
         return parseLoc();
     }
-    
+
     error("Invalid factor");
     return nullptr;
 }
 
 CSTNode* Parser::parseBlockPrime() {
     CSTNode* node = new CSTNode(NodeType::BLOCK);
-    
+
     if (match(RIGHT_BRACE)) {
         node->addChild(new CSTNode(RIGHT_BRACE, "}"));
         return node;
     }
-    
+
     CSTNode* stmtsNode = parseStmts();
     if (!stmtsNode) return nullptr;
     node->addChild(stmtsNode);
-    
+
     expect(RIGHT_BRACE);
     node->addChild(new CSTNode(RIGHT_BRACE, "}"));
-    
+
     return node;
 }
 
 CSTNode* Parser::parseBlockDoublePrime() {
     CSTNode* node = new CSTNode(NodeType::BLOCK);
-    
+
     if (peek(BASIC)) {
         CSTNode* declsNode = parseDecls();
         if (!declsNode) return nullptr;
         node->addChild(declsNode);
     }
-    
+
     CSTNode* stmtsNode = parseStmts();
     if (!stmtsNode) return nullptr;
     node->addChild(stmtsNode);
-    
+
     return node;
 }
 
 CSTNode* Parser::parseStmtsPrime() {
     CSTNode* node = new CSTNode(NodeType::STMTS);
-    
-    if (peek(IF) || peek(IDENTIFIER) || peek(WHILE) || peek(DO) || 
+
+    if (peek(IF) || peek(IDENTIFIER) || peek(WHILE) || peek(DO) ||
         peek(BREAK) || peek(RETURN) || peek(LEFT_BRACE)) {
-        
+
         CSTNode* stmtNode = parseStmt();
         if (!stmtNode) return nullptr;
         node->addChild(stmtNode);
-        
+
         CSTNode* stmtsPrimeNode = parseStmtsPrime();
         if (!stmtsPrimeNode) return nullptr;
         node->addChild(stmtsPrimeNode);
@@ -635,16 +636,16 @@ CSTNode* Parser::parseStmtsPrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseStmtPrime() {
     CSTNode* node = new CSTNode(NodeType::STMT);
-    
+
     if (match(ELSE)) {
         node->addChild(new CSTNode(ELSE, "else"));
-        
+
         CSTNode* stmtNode = parseStmt();
         if (!stmtNode) return nullptr;
         node->addChild(stmtNode);
@@ -652,58 +653,58 @@ CSTNode* Parser::parseStmtPrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseEqualityPrime() {
     CSTNode* node = new CSTNode(NodeType::EQUALITY);
-    
+
     if (match(LOGIC_EQUAL)) {
         node->addChild(new CSTNode(LOGIC_EQUAL, "=="));
-        
+
         CSTNode* relNode = parseRel();
         if (!relNode) return nullptr;
         node->addChild(relNode);
     }
     else if (match(LOGIC_NOT_EQUAL)) {
         node->addChild(new CSTNode(LOGIC_NOT_EQUAL, "!="));
-        
+
         CSTNode* relNode = parseRel();
         if (!relNode) return nullptr;
         node->addChild(relNode);
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseRelPrime() {
     CSTNode* node = new CSTNode(NodeType::REL);
-    
+
     if (match(LESS_THAN)) {
         node->addChild(new CSTNode(LESS_THAN, "<"));
-        
+
         CSTNode* exprNode = parseExpr();
         if (!exprNode) return nullptr;
         node->addChild(exprNode);
     }
     else if (match(LESS_THAN_EQ)) {
         node->addChild(new CSTNode(LESS_THAN_EQ, "<="));
-        
+
         CSTNode* exprNode = parseExpr();
         if (!exprNode) return nullptr;
         node->addChild(exprNode);
     }
     else if (match(GREATER_THAN_EQ)) {
         node->addChild(new CSTNode(GREATER_THAN_EQ, ">="));
-        
+
         CSTNode* exprNode = parseExpr();
         if (!exprNode) return nullptr;
         node->addChild(exprNode);
     }
     else if (match(GREATER_THAN)) {
         node->addChild(new CSTNode(GREATER_THAN, ">"));
-        
+
         CSTNode* exprNode = parseExpr();
         if (!exprNode) return nullptr;
         node->addChild(exprNode);
@@ -716,54 +717,54 @@ CSTNode* Parser::parseRelPrime() {
 
 CSTNode* Parser::parseExprPrime() {
     CSTNode* node = new CSTNode(NodeType::EXPR);
-    
+
     if (match(PLUS)) {
         node->addChild(new CSTNode(PLUS, "+"));
-        
+
         CSTNode* termNode = parseTerm();
         if (!termNode) return nullptr;
         node->addChild(termNode);
     }
     else if (match(MINUS)) {
         node->addChild(new CSTNode(MINUS, "-"));
-        
+
         CSTNode* termNode = parseTerm();
         if (!termNode) return nullptr;
         node->addChild(termNode);
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseTermPrime() {
     CSTNode* node = new CSTNode(NodeType::TERM);
-    
+
     if (match(MULTIPLY)) {
         node->addChild(new CSTNode(MULTIPLY, "*"));
-        
+
         CSTNode* unaryNode = parseUnary();
         if (!unaryNode) return nullptr;
         node->addChild(unaryNode);
     }
     else if (match(DIVIDE)) {
         node->addChild(new CSTNode(DIVIDE, "/"));
-        
+
         CSTNode* unaryNode = parseUnary();
         if (!unaryNode) return nullptr;
         node->addChild(unaryNode);
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseDeclsPrime() {
     CSTNode* node = new CSTNode(NodeType::DECLS);
-    
+
     if (peek(BASIC)) {
         CSTNode* declNode = parseDecl();
         if (!declNode) return nullptr;
         node->addChild(declNode);
-        
+
         CSTNode* declsPrimeNode = parseDeclsPrime();
         if (!declsPrimeNode) return nullptr;
         node->addChild(declsPrimeNode);
@@ -771,25 +772,25 @@ CSTNode* Parser::parseDeclsPrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseTypePrime() {
     CSTNode* node = new CSTNode(NodeType::TYPE);
-    
+
     if (match(LEFT_BRACKET)) {
         node->addChild(new CSTNode(LEFT_BRACKET, "["));
-        
+
         if (!match(INTEGER)) {
             error("Expected number in array declaration");
             return nullptr;
         }
         node->addChild(new CSTNode(INTEGER, tokens[currentPos-1].second));
-        
+
         expect(RIGHT_BRACKET);
         node->addChild(new CSTNode(RIGHT_BRACKET, "]"));
-        
+
         CSTNode* typePrimeNode = parseTypePrime();
         if (!typePrimeNode) return nullptr;
         node->addChild(typePrimeNode);
@@ -797,7 +798,7 @@ CSTNode* Parser::parseTypePrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
@@ -805,36 +806,36 @@ CSTNode* Parser::parseLocPrime() {
     if (!match(LEFT_BRACKET)) {
         return nullptr;  // Don't create epsilon nodes for empty loc primes
     }
-    
+
     CSTNode* node = new CSTNode(NodeType::LOC);
     node->addChild(new CSTNode(LEFT_BRACKET, "["));
-    
+
     CSTNode* boolNode = parseBool();
     if (!boolNode) return nullptr;
     node->addChild(boolNode);
-    
+
     expect(RIGHT_BRACKET);
     node->addChild(new CSTNode(RIGHT_BRACKET, "]"));
-    
+
     CSTNode* nextPrime = parseLocPrime();
     if (nextPrime) {
         node->addChild(nextPrime);
     }
-    
+
     return node;
 }
 
 
 CSTNode* Parser::parseBoolPrime() {
     CSTNode* node = new CSTNode(NodeType::BOOL);
-    
+
     if (match(LOGIC_OR)) {
         node->addChild(new CSTNode(LOGIC_OR, "||"));
-        
+
         CSTNode* joinNode = parseJoin();
         if (!joinNode) return nullptr;
         node->addChild(joinNode);
-        
+
         CSTNode* boolPrimeNode = parseBoolPrime();
         if (!boolPrimeNode) return nullptr;
         node->addChild(boolPrimeNode);
@@ -842,20 +843,20 @@ CSTNode* Parser::parseBoolPrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseJoinPrime() {
     CSTNode* node = new CSTNode(NodeType::JOIN);
-    
+
     if (match(LOGIC_AND)) {
         node->addChild(new CSTNode(LOGIC_AND, "&&"));
-        
+
         CSTNode* equalityNode = parseEquality();
         if (!equalityNode) return nullptr;
         node->addChild(equalityNode);
-        
+
         CSTNode* joinPrimeNode = parseJoinPrime();
         if (!joinPrimeNode) return nullptr;
         node->addChild(joinPrimeNode);
@@ -863,18 +864,18 @@ CSTNode* Parser::parseJoinPrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseEqualityDoublePrime() {
     CSTNode* node = new CSTNode(NodeType::EQUALITY);
-    
+
     if (peek(LOGIC_EQUAL) || peek(LOGIC_NOT_EQUAL)) {
         CSTNode* equalityPrimeNode = parseEqualityPrime();
         if (!equalityPrimeNode) return nullptr;
         node->addChild(equalityPrimeNode);
-        
+
         CSTNode* equalityDoublePrimeNode = parseEqualityDoublePrime();
         if (!equalityDoublePrimeNode) return nullptr;
         node->addChild(equalityDoublePrimeNode);
@@ -882,18 +883,18 @@ CSTNode* Parser::parseEqualityDoublePrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseExprDoublePrime() {
     CSTNode* node = new CSTNode(NodeType::EXPR);
-    
+
     if (peek(PLUS) || peek(MINUS)) {
         CSTNode* exprPrimeNode = parseExprPrime();
         if (!exprPrimeNode) return nullptr;
         node->addChild(exprPrimeNode);
-        
+
         CSTNode* exprDoublePrimeNode = parseExprDoublePrime();
         if (!exprDoublePrimeNode) return nullptr;
         node->addChild(exprDoublePrimeNode);
@@ -901,18 +902,18 @@ CSTNode* Parser::parseExprDoublePrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
 CSTNode* Parser::parseTermDoublePrime() {
     CSTNode* node = new CSTNode(NodeType::TERM);
-    
+
     if (peek(MULTIPLY) || peek(DIVIDE)) {
         CSTNode* termPrimeNode = parseTermPrime();
         if (!termPrimeNode) return nullptr;
         node->addChild(termPrimeNode);
-        
+
         CSTNode* termDoublePrimeNode = parseTermDoublePrime();
         if (!termDoublePrimeNode) return nullptr;
         node->addChild(termDoublePrimeNode);
@@ -920,7 +921,7 @@ CSTNode* Parser::parseTermDoublePrime() {
     else {
         node->addChild(CSTNode::createEpsilon());
     }
-    
+
     return node;
 }
 
@@ -928,7 +929,7 @@ CSTNode* Parser::parseTermDoublePrime() {
 string Parser::tokenTypeToString(TokenType type) {
     switch (type) {
         case KEYWORD: return "keyword";
-        case IDENTIFIER: return "identifier"; 
+        case IDENTIFIER: return "identifier";
         case COMMENT: return "comment";
         case INVALID: return "invalid";
         case LEFT_PAREN: return "(";
@@ -981,38 +982,4 @@ CSTNode* Parser::parse() {
         return nullptr;
     }
     return root;
-}
-
-// Add main function for testing if needed
-int main() {
-    SymbolTable symbolTable;
-
-    // Test case
-    string code = R"(
-        int main() {
-        int zero;
-        return 0;
-        }
-    )";
-
-    // Lexical Analysis
-    vector<pair<TokenType, string>> tokens = lexer(code, symbolTable);
-    cout << "Tokens:" << endl;
-    printTokens(tokens);
-    
-    // Parsing with CST generation
-    Parser parser(tokens, symbolTable);
-    try {
-        CSTNode* syntaxTree = parser.parse();
-        if (syntaxTree) {
-            cout << "\nConcrete Syntax Tree" << endl;
-            cout << "-------------------------" << endl;
-            syntaxTree->printTree(0);
-            cout << "-------------------------" << endl;
-            delete syntaxTree;
-        }
-    } catch (const exception& e) {
-        cout << "Parsing failed: " << e.what() << endl;
-    }
-    return 0;
 }
