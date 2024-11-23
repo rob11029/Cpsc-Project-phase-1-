@@ -6,18 +6,34 @@ string nodeTypeToString(NodeType type) {
     switch(type) {
         case NodeType::PROGRAM: return "Program";
         case NodeType::BLOCK: return "Block";
+        case NodeType::BLOCK_PRIME: return "Block'";
+        case NodeType::BLOCK_DOUBLE_PRIME: return "Block''";
         case NodeType::DECLS: return "Decls";
+        case NodeType::DECLS_PRIME: return "Decls'";
         case NodeType::DECL: return "Decl";
         case NodeType::TYPE: return "Type";
+        case NodeType::TYPE_PRIME: return "Type'";
         case NodeType::STMTS: return "Stmts";
+        case NodeType::STMTS_PRIME: return "Stmts'";
         case NodeType::STMT: return "Stmt";
+        case NodeType::STMT_PRIME: return "Stmt'";
         case NodeType::LOC: return "Loc";
+        case NodeType::LOC_PRIME: return "Loc'";
         case NodeType::BOOL: return "Bool";
+        case NodeType::BOOL_PRIME: return "Bool'";
         case NodeType::JOIN: return "Join";
+        case NodeType::JOIN_PRIME: return "Join'";
         case NodeType::EQUALITY: return "Equality";
+        case NodeType::EQUALITY_PRIME: return "Equality'";
+        case NodeType::EQUALITY_DOUBLE_PRIME: return "Equality''";
         case NodeType::REL: return "Rel";
+        case NodeType::REL_PRIME: return "Rel'";
         case NodeType::EXPR: return "Expr";
+        case NodeType::EXPR_PRIME: return "Expr'";
+        case NodeType::EXPR_DOUBLE_PRIME: return "Expr''";
         case NodeType::TERM: return "Term";
+        case NodeType::TERM_PRIME: return "Term'";
+        case NodeType::TERM_DOUBLE_PRIME: return "Term''";
         case NodeType::UNARY: return "Unary";
         case NodeType::FACTOR: return "Factor";
         case NodeType::TERMINAL: return "Terminal";
@@ -586,7 +602,7 @@ CSTNode* Parser::parseFactor() {
 }
 
 CSTNode* Parser::parseBlockPrime() {
-    CSTNode* node = new CSTNode(NodeType::BLOCK);
+    CSTNode* node = new CSTNode(NodeType::BLOCK_PRIME);
 
     if (match(RIGHT_BRACE)) {
         node->addChild(new CSTNode(RIGHT_BRACE, "}"));
@@ -604,7 +620,7 @@ CSTNode* Parser::parseBlockPrime() {
 }
 
 CSTNode* Parser::parseBlockDoublePrime() {
-    CSTNode* node = new CSTNode(NodeType::BLOCK);
+    CSTNode* node = new CSTNode(NodeType::BLOCK_DOUBLE_PRIME);
 
     if (peek(BASIC)) {
         CSTNode* declsNode = parseDecls();
@@ -620,7 +636,7 @@ CSTNode* Parser::parseBlockDoublePrime() {
 }
 
 CSTNode* Parser::parseStmtsPrime() {
-    CSTNode* node = new CSTNode(NodeType::STMTS);
+    CSTNode* node = new CSTNode(NodeType::STMTS_PRIME);
 
     if (peek(IF) || peek(IDENTIFIER) || peek(WHILE) || peek(DO) ||
         peek(BREAK) || peek(RETURN) || peek(LEFT_BRACE)) {
@@ -641,7 +657,7 @@ CSTNode* Parser::parseStmtsPrime() {
 }
 
 CSTNode* Parser::parseStmtPrime() {
-    CSTNode* node = new CSTNode(NodeType::STMT);
+    CSTNode* node = new CSTNode(NodeType::STMT_PRIME);
 
     if (match(ELSE)) {
         node->addChild(new CSTNode(ELSE, "else"));
@@ -658,7 +674,7 @@ CSTNode* Parser::parseStmtPrime() {
 }
 
 CSTNode* Parser::parseEqualityPrime() {
-    CSTNode* node = new CSTNode(NodeType::EQUALITY);
+    CSTNode* node = new CSTNode(NodeType::EQUALITY_PRIME);
 
     if (match(LOGIC_EQUAL)) {
         node->addChild(new CSTNode(LOGIC_EQUAL, "=="));
@@ -679,7 +695,7 @@ CSTNode* Parser::parseEqualityPrime() {
 }
 
 CSTNode* Parser::parseRelPrime() {
-    CSTNode* node = new CSTNode(NodeType::REL);
+    CSTNode* node = new CSTNode(NodeType::REL_PRIME);
 
     if (match(LESS_THAN)) {
         node->addChild(new CSTNode(LESS_THAN, "<"));
@@ -716,7 +732,7 @@ CSTNode* Parser::parseRelPrime() {
 }
 
 CSTNode* Parser::parseExprPrime() {
-    CSTNode* node = new CSTNode(NodeType::EXPR);
+    CSTNode* node = new CSTNode(NodeType::EXPR_PRIME);
 
     if (match(PLUS)) {
         node->addChild(new CSTNode(PLUS, "+"));
@@ -737,7 +753,7 @@ CSTNode* Parser::parseExprPrime() {
 }
 
 CSTNode* Parser::parseTermPrime() {
-    CSTNode* node = new CSTNode(NodeType::TERM);
+    CSTNode* node = new CSTNode(NodeType::TERM_PRIME);
 
     if (match(MULTIPLY)) {
         node->addChild(new CSTNode(MULTIPLY, "*"));
@@ -758,7 +774,7 @@ CSTNode* Parser::parseTermPrime() {
 }
 
 CSTNode* Parser::parseDeclsPrime() {
-    CSTNode* node = new CSTNode(NodeType::DECLS);
+    CSTNode* node = new CSTNode(NodeType::DECLS_PRIME);
 
     if (peek(BASIC)) {
         CSTNode* declNode = parseDecl();
@@ -777,7 +793,7 @@ CSTNode* Parser::parseDeclsPrime() {
 }
 
 CSTNode* Parser::parseTypePrime() {
-    CSTNode* node = new CSTNode(NodeType::TYPE);
+    CSTNode* node = new CSTNode(NodeType::TYPE_PRIME);
 
     if (match(LEFT_BRACKET)) {
         node->addChild(new CSTNode(LEFT_BRACKET, "["));
@@ -807,7 +823,7 @@ CSTNode* Parser::parseLocPrime() {
         return nullptr;  // Don't create epsilon nodes for empty loc primes
     }
 
-    CSTNode* node = new CSTNode(NodeType::LOC);
+    CSTNode* node = new CSTNode(NodeType::LOC_PRIME);
     node->addChild(new CSTNode(LEFT_BRACKET, "["));
 
     CSTNode* boolNode = parseBool();
@@ -827,7 +843,7 @@ CSTNode* Parser::parseLocPrime() {
 
 
 CSTNode* Parser::parseBoolPrime() {
-    CSTNode* node = new CSTNode(NodeType::BOOL);
+    CSTNode* node = new CSTNode(NodeType::BOOL_PRIME);
 
     if (match(LOGIC_OR)) {
         node->addChild(new CSTNode(LOGIC_OR, "||"));
@@ -848,7 +864,7 @@ CSTNode* Parser::parseBoolPrime() {
 }
 
 CSTNode* Parser::parseJoinPrime() {
-    CSTNode* node = new CSTNode(NodeType::JOIN);
+    CSTNode* node = new CSTNode(NodeType::JOIN_PRIME);
 
     if (match(LOGIC_AND)) {
         node->addChild(new CSTNode(LOGIC_AND, "&&"));
@@ -869,7 +885,7 @@ CSTNode* Parser::parseJoinPrime() {
 }
 
 CSTNode* Parser::parseEqualityDoublePrime() {
-    CSTNode* node = new CSTNode(NodeType::EQUALITY);
+    CSTNode* node = new CSTNode(NodeType::EQUALITY_DOUBLE_PRIME);
 
     if (peek(LOGIC_EQUAL) || peek(LOGIC_NOT_EQUAL)) {
         CSTNode* equalityPrimeNode = parseEqualityPrime();
@@ -888,7 +904,7 @@ CSTNode* Parser::parseEqualityDoublePrime() {
 }
 
 CSTNode* Parser::parseExprDoublePrime() {
-    CSTNode* node = new CSTNode(NodeType::EXPR);
+    CSTNode* node = new CSTNode(NodeType::EXPR_DOUBLE_PRIME);
 
     if (peek(PLUS) || peek(MINUS)) {
         CSTNode* exprPrimeNode = parseExprPrime();
@@ -907,7 +923,7 @@ CSTNode* Parser::parseExprDoublePrime() {
 }
 
 CSTNode* Parser::parseTermDoublePrime() {
-    CSTNode* node = new CSTNode(NodeType::TERM);
+    CSTNode* node = new CSTNode(NodeType::TERM_DOUBLE_PRIME);
 
     if (peek(MULTIPLY) || peek(DIVIDE)) {
         CSTNode* termPrimeNode = parseTermPrime();
