@@ -37,7 +37,7 @@ string nodeTypeToString(NodeType type) {
         case NodeType::UNARY: return "Unary";
         case NodeType::FACTOR: return "Factor";
         case NodeType::TERMINAL: return "Terminal";
-        case NodeType::EPSILON: return "epsilon";
+        case NodeType::EPSILON: return "ε";
         default: return "Unknown";
     }
 }
@@ -68,9 +68,7 @@ void CSTNode::printTree(int depth) const {
 
     // Print children without epsilon nodes
     for (const auto* child : children) {
-        if (child && child->type != NodeType::EPSILON) {
-            child->printTree(depth + 1);
-        }
+          child->printTree(depth + 1);
     }
 }
 
