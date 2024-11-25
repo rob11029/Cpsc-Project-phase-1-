@@ -73,14 +73,17 @@ private:
                 }
                 return programNode;
             }
+
             case NodeType::BLOCK: {
               ASTNode* blockNode = new ASTNode("Block");
-              blockNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              blockNode->addChild(transformToAST(cstNode->getChildren()[1]));
-              blockNode->addChild(transformToAST(cstNode->getChildren()[2]));
-              blockNode->addChild(transformToAST(cstNode->getChildren()[3]));
-              return blockNode;
+                for (CSTNode* child : cstNode->getChildren()) {
+                    ASTNode* astChild = transformToAST(child);
+                    if (astChild) blockNode->addChild(astChild);
+                }
+                return blockNode;
             }
+
+            // Skip through DECLS
             case NodeType::DECLS: {
               ASTNode* firstChild = transformToAST(cstNode->getChildren()[0]);
               return firstChild;
@@ -93,118 +96,41 @@ private:
                 }
                 return declNode;
             }
+
+            // Skip through TYPE
             case NodeType::TYPE: {
                ASTNode* firstChild = transformToAST(cstNode->getChildren()[0]);
                return firstChild;
 
             }
             case NodeType::STMTS: {
-              ASTNode* stmtsNode = new ASTNode("Statements");
-                for (CSTNode* child : cstNode->getChildren()) {
-                    ASTNode* astChild = transformToAST(child);
-                    if (astChild) stmtsNode->addChild(astChild);
-                }
+              ASTNode* stmtsNode = transformToAST(cstNode->getChildren()[0]);
+              stmtsNode->addChild(transformToAST(cstNode->getChildren()[1]));
               return stmtsNode;
             }
 
             case NodeType::STMT: {
-                CSTNode* firstChild = cstNode->getChildren()[0];
-                ASTNode* stmtNode = new ASTNode("Statement");
-                if (firstChild->getTokenType() == RETURN) {
+              CSTNode* firstChild = cstNode->getChildren()[0];
+              ASTNode* stmtNode = new ASTNode("Statement");
                 for (CSTNode* child : cstNode->getChildren()) {
                     ASTNode* astChild = transformToAST(child);
                     if (astChild) stmtNode->addChild(astChild);
                 }
                   return stmtNode;
-                } else if (firstChild->getTokenType() == IF) {
-                    ASTNode* ifNode = new ASTNode("if");
-                    ifNode->addChild(transformToAST(cstNode->getChildren()[1]));
-                    ifNode->addChild(transformToAST(cstNode->getChildren()[2]));
-                    if (cstNode->getChildren().size() > 3) {
-                        ifNode->addChild(transformToAST(cstNode->getChildren()[3]));
-                    }
-                    return ifNode;
-                } else if (firstChild->getTokenType() == WHILE) {
-                for (CSTNode* child : cstNode->getChildren()) {
-                    ASTNode* astChild = transformToAST(child);
-                    if (astChild) stmtNode->addChild(astChild);
-                }
-                  return stmtNode;
-                } else if (firstChild->getTokenType() == BREAK) {
-                for (CSTNode* child : cstNode->getChildren()) {
-                    ASTNode* astChild = transformToAST(child);
-                    if (astChild) stmtNode->addChild(astChild);
-                }
-                  return stmtNode;
-                } else if (firstChild->getTokenType() == DO) {
-                for (CSTNode* child : cstNode->getChildren()) {
-                    ASTNode* astChild = transformToAST(child);
-                    if (astChild) stmtNode->addChild(astChild);
-                }
-                  return stmtNode;
-                } else if (firstChild->getTokenType() == IDENTIFIER) {
-                for (CSTNode* child : cstNode->getChildren()) {
-                    ASTNode* astChild = transformToAST(child);
-                    if (astChild) stmtNode->addChild(astChild);
-                }
-                  return stmtNode;
-                }
-            }
-            case NodeType::LOC: {
-                ASTNode* locNode = new ASTNode("Loc");
-                for (CSTNode* child : cstNode->getChildren()) {
-                    ASTNode* astChild = transformToAST(child);
-                    if (astChild) locNode->addChild(astChild);
-                }
-                return locNode;
-            }
-            case NodeType::BOOL: {
-              ASTNode* boolNode = new ASTNode("Bool");
-              boolNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return boolNode;
-            }
-            case NodeType::JOIN: {
-              ASTNode* joinNode = new ASTNode("Join");
-              joinNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return joinNode;
-            }
-            case NodeType::EQUALITY: {
-              ASTNode* equalityNode = new ASTNode("Equality");
-              equalityNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return equalityNode;
-            }
-            case NodeType::REL: {
-              ASTNode* relNode = new ASTNode("Rel");
-              relNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return relNode;
             }
 
-            case NodeType::EXPR: {
-                ASTNode* exprNode = new ASTNode("Expression");
-                exprNode->addChild(transformToAST(cstNode->getChildren()[0]));
-                exprNode->addChild(new ASTNode("Operator", cstNode->getChildren()[1]->getValue()));
-                exprNode->addChild(transformToAST(cstNode->getChildren()[2]));
-                return exprNode;
-            }
-            case NodeType::TERM: {
-              ASTNode* termNode = new ASTNode("Term");
-              termNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return termNode;
-            }
-            case NodeType::UNARY: {
-              ASTNode* unaryNode = new ASTNode("Unary");
-              unaryNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return unaryNode;
-            }
+            // Skip through these
+            case NodeType::LOC:
+            case NodeType::BOOL:
+            case NodeType::JOIN:
+            case NodeType::EQUALITY:
+            case NodeType::REL:
+            case NodeType::EXPR:
+            case NodeType::TERM:
+            case NodeType::UNARY:
             case NodeType::FACTOR: {
-              ASTNode* factorNode = new ASTNode("Factor");
-              factorNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return factorNode;
-            }
-            case NodeType::EPSILON: {
-              ASTNode* epsilonNode = new ASTNode("Epsilon");
-              epsilonNode->addChild(transformToAST(cstNode->getChildren()[0]));
-              return epsilonNode;
+               ASTNode* firstChild = transformToAST(cstNode->getChildren()[0]);
+               return firstChild;
             }
             default:
                 if (cstNode->getType() == NodeType::TERMINAL) {
@@ -233,7 +159,7 @@ int main() {
     string code = R"(
     int main() {
     int zero;
-    zero = 0;
+    zero = 1;
     return 0;
     }
     )";
