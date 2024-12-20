@@ -3,12 +3,15 @@ using namespace std;
 
 class Node {
   string lexeme, token, value;
-  int line_number, char_start_num, length;
+  string data_type; // added field for type (int, float, void, etc.)
+  int block_id; // block number
+  int line_number, char_start_num, length; // Preserved location information
   Node* next;
 
 public:
   Node() {
     next = NULL;
+    block_id = 0; // default block id
   }
 
   // Node needs lexemes, token, lexeme value / lexeme itself, line number, character start number, and lexeme length
@@ -16,10 +19,12 @@ public:
     this->lexeme = lexeme;
     this->token = token;
     this->value = value;
+    this->data_type = ""; // phase 4 update
+    this->block_id = 0; // phase 4 update
     this->line_number = line_number;
     this->char_start_num = char_start_num;
     this->length = length;
-    next = NULL;
+    this->next = NULL;
   }
 
   // FOR TESTING, COULD BE REMOVE WHEN USING THE PARSER
@@ -36,74 +41,123 @@ public:
 
 class SymbolTable {
   Node* head[100];
+  int current_block;
 
 public:
   SymbolTable() {
-    for (int i = 0; i < 100; i++) head[i] = NULL;
-  }
-
-// Function to find the lexeme in the symbol table
-string find(string l) {
-  int index = getIndex(l);
-  Node* start = head[index];
-  if (start == NULL) return "-1";
-
-  while (start != NULL) {
-    if (start->lexeme == l) {
-      start->print();
-      return start->lexeme;
+    for (int i = 0; i < 100; i++) {
+      head[i] = NULL;
     }
-    start = start->next;
+    current_block = 0;  // Initialize block number
   }
-  return "-1";
-}
 
+  // Enter a new block phase 4 update
+  void enterBlock() {
+    current_block++;
+  }
 
-// bool insert(string l, string t, string v, int lNo, int c_s_n, int lgh) {
-//   int index = getIndex(l);
-//   Node* x = new Node(l, t, v, lNo, c_s_n, lgh);
+  // Exit current block phase 4 update
+  void exitBlock() {
+    if (current_block > 0) {
+      current_block--;
+    }
+  }
 
-//   if (head[index] == NULL) {
-//     head[index] = x;
-//     cout << " Inserted " << l << " in the symbol table" << endl;
-//     return true;
-//   } else {
-//     Node* start = head[index];
-//     while (start->next != NULL) start = start->next;
+  // Get current block number
+  int getCurrentBlock() {
+    return current_block;
+  }
 
-//     start->next = x;
-//     cout << " Inserted " << l << " in the symbol table" << endl;
-//     return true;
-//   }
-//   return false;
-// }
+  // Modified insert to only store identifiers and keywords and handle type
+  bool insert(string lexeme, string token, string value, 
+              int line_no, int char_start_num, int length) {
+    // Only store identifiers and keywords
+    if (token != "IDENTIFIER" && token != "KEYWORD" && 
+        token != "BASIC" && token != "MAIN") {
+      return false;
+    }
 
-// Function to insert lexemes, token, lexeme value / lexeme itself, line number, character start number,
-// and lexeme length into Symbol Table
-// phase 3 update
+    int index = getIndex(lexeme);
+    Node* newNode = new Node(lexeme, token, value, line_no, char_start_num, length);
+    newNode->block_id = current_block;  // Set the block number
+    
+    // If token is BASIC, set it as the type
+    if (token == "BASIC") {
+      newNode->data_type = value;
+    }
 
-bool insert(string l, string t, string v, int lNo, int c_s_n, int lgh) {
-    int index = getIndex(l);
-    Node* x = new Node(l, t, v, lNo, c_s_n, lgh);
-
+    // Insert into symbol table
     if (head[index] == NULL) {
-        head[index] = x;
-        return true;
+      head[index] = newNode;
     } else {
-        Node* start = head[index];
-        while (start->next != NULL) start = start->next;
-        start->next = x;
+      Node* current = head[index];
+      while (current->next != NULL) {
+        // Check for redeclaration in same scope
+        if (current->lexeme == lexeme && current->block_id == current_block) {
+          delete newNode;
+          return false; 
+        }
+        current = current->next;
+      }
+      current->next = newNode;
+    }
+    return true;
+  }
+
+  // Set type for an identifier
+  bool setType(string lexeme, string type) {
+    int index = getIndex(lexeme);
+    Node* current = head[index];
+
+    while (current != NULL) {
+      if (current->lexeme == lexeme && 
+          current->block_id == current_block) {
+        current->data_type = type;
         return true;
+      }
+      current = current->next;
     }
     return false;
-}
-
-// Function to get index based on the lexeme
-int getIndex(string l) {
-  int index = 0;
-  for (int i = 0; i < l.length(); i++) {
-    index = index + l[i];
   }
-  return (index % 100);
-}
+
+  string find(string lexeme) {
+    int index = getIndex(lexeme);
+    Node* current = head[index];
+
+    // Search from current block outward to global scope
+    for (int searchBlock = current_block; searchBlock >= 0; searchBlock--) {
+      Node* temp = current;
+      while (temp != NULL) {
+        if (temp->lexeme == lexeme && temp->block_id <= searchBlock) {
+          temp->print();
+          return temp->lexeme;
+        }
+        temp = temp->next;
+      }
+    }
+    return "-1";  // Not found
+  }
+
+  // Get the type of an identifier
+  string getType(string lexeme) {
+    int index = getIndex(lexeme);
+    Node* current = head[index];
+
+    while (current != NULL) {
+      if (current->lexeme == lexeme && 
+          current->block_id <= current_block) {
+        return current->data_type;
+      }
+      current = current->next;
+    }
+    return "unknown";
+  }
+
+  int getIndex(string lexeme) {
+    int index = 0;
+    for (int i = 0; i < lexeme.length(); i++) {
+      index = index + lexeme[i];
+    }
+    return (index % 100);
+  }
 };
