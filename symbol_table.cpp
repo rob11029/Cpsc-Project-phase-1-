@@ -32,6 +32,8 @@ public:
     cout << " Lexeme: " << lexeme
          << "\n Token: " << token
          << "\n Token Value: " << value
+         << "\n Data Type: " << data_type
+         << "\n Block #: " << block_id
          << "\n Line #: " << line_number
          << "\n Character Start number: " << char_start_num
          << "\n Length: " << length << endl << endl;
