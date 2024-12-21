@@ -11,7 +11,7 @@ class Node {
 public:
   Node() {
     next = NULL;
-    block_id = 0; // default block id
+    block_id = 0; // initial block id
   }
 
   // Node needs lexemes, token, lexeme value / lexeme itself, line number, character start number, and lexeme length
@@ -50,54 +50,44 @@ public:
     for (int i = 0; i < 100; i++) {
       head[i] = NULL;
     }
-    current_block = 0;  // Initialize block number
+    current_block = 0; // initialize block number
   }
 
-  // Enter a new block phase 4 update
+  // Block management
   void enterBlock() {
     current_block++;
   }
 
-  // Exit current block phase 4 update
   void exitBlock() {
     if (current_block > 0) {
       current_block--;
     }
   }
-
-  // Get current block number
+  // Get current block
   int getCurrentBlock() {
     return current_block;
   }
 
-  // Modified insert to only store identifiers and keywords and handle type
+  // Modified insert to only store identifiers and keywords
   bool insert(string lexeme, string token, string value, 
               int line_no, int char_start_num, int length) {
     // Only store identifiers and keywords
-    if (token != "IDENTIFIER" && token != "KEYWORD" && 
-        token != "BASIC" && token != "MAIN") {
+    if (token != "IDENTIFIER" && token != "KEYWORD") {
       return false;
     }
 
     int index = getIndex(lexeme);
     Node* newNode = new Node(lexeme, token, value, line_no, char_start_num, length);
-    newNode->block_id = current_block;  // Set the block number
-    
-    // If token is BASIC, set it as the type
-    if (token == "BASIC") {
-      newNode->data_type = value;
-    }
+    newNode->block_id = current_block;
 
-    // Insert into symbol table
     if (head[index] == NULL) {
       head[index] = newNode;
     } else {
       Node* current = head[index];
       while (current->next != NULL) {
-        // Check for redeclaration in same scope
         if (current->lexeme == lexeme && current->block_id == current_block) {
           delete newNode;
-          return false; 
+          return false; // Identifier already exists in the current block
         }
         current = current->next;
       }
@@ -126,7 +116,6 @@ public:
     int index = getIndex(lexeme);
     Node* current = head[index];
 
-    // Search from current block outward to global scope
     for (int searchBlock = current_block; searchBlock >= 0; searchBlock--) {
       Node* temp = current;
       while (temp != NULL) {
@@ -137,10 +126,9 @@ public:
         temp = temp->next;
       }
     }
-    return "-1";  // Not found
+    return "-1";
   }
 
-  // Get the type of an identifier
   string getType(string lexeme) {
     int index = getIndex(lexeme);
     Node* current = head[index];
