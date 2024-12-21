@@ -120,14 +120,54 @@ private:
             }
 
             // Skip through these
-            case NodeType::LOC:
-            case NodeType::BOOL:
-            case NodeType::JOIN:
-            case NodeType::EQUALITY:
-            case NodeType::REL:
-            case NodeType::EXPR:
-            case NodeType::TERM:
-            case NodeType::UNARY:
+            case NodeType::LOC: {
+              ASTNode* locNode = transformToAST(cstNode->getChildren()[0]);
+              locNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              locNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return locNode;
+            }
+            case NodeType::BOOL: {
+              ASTNode* boolNode = transformToAST(cstNode->getChildren()[0]);
+              boolNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              boolNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return boolNode;
+            }
+            case NodeType::JOIN: {
+              ASTNode* joinNode = transformToAST(cstNode->getChildren()[0]);
+              joinNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              joinNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return joinNode;
+            }
+            case NodeType::EQUALITY: {
+              ASTNode* equalityNode = transformToAST(cstNode->getChildren()[0]);
+              equalityNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              equalityNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return equalityNode;
+            }
+            case NodeType::REL: {
+              ASTNode* relNode = transformToAST(cstNode->getChildren()[0]);
+              relNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              relNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return relNode;
+            }
+            case NodeType::EXPR: {
+              ASTNode* exprNode = transformToAST(cstNode->getChildren()[0]);
+              exprNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              exprNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return exprNode;
+            }
+            case NodeType::TERM: {
+              ASTNode* termNode = transformToAST(cstNode->getChildren()[0]);
+              termNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              termNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return termNode;
+            }
+            case NodeType::UNARY: {
+              ASTNode* unaryNode = transformToAST(cstNode->getChildren()[0]);
+              unaryNode->addChild(transformToAST(cstNode->getChildren()[1]));
+              unaryNode->addChild(transformToAST(cstNode->getChildren()[2]));
+              return unaryNode;
+            }
             case NodeType::FACTOR: {
                ASTNode* firstChild = transformToAST(cstNode->getChildren()[0]);
                return firstChild;
@@ -158,8 +198,12 @@ int main() {
     // Testing this mess
     string code = R"(
     int main() {
-    int zero;
-    zero = 1;
+    int a; int b; int c;
+    a = 3;
+    b = 5;
+    c = b - a;
+    b = a + c;
+    c = b - a;
     return 0;
     }
     )";
